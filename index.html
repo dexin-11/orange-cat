@@ -282,24 +282,21 @@
 
   /* ===== Camera body ===== */
   .camera{
-    position:absolute;left:50%;bottom:24%;transform:translateX(-50%);
+    position:absolute;left:50%;bottom:24%;
     width:62%;max-width:340px;cursor:pointer;
-    transition:transform .25s cubic-bezier(.34,1.56,.64,1);
     filter:drop-shadow(0 8px 12px rgba(0,0,0,.25));
   }
-  .camera:hover{transform:translateX(-50%) translateY(-4px) rotate(-1deg)}
-  .camera:active{transform:translateX(-50%) translateY(0) scale(.98)}
+  .camera:hover{filter:drop-shadow(0 12px 16px rgba(0,0,0,.32)) brightness(1.05)}
 
   /* ===== Cat (sits on/next to camera) ===== */
   .cat{
     position:absolute;left:18%;bottom:30%;
     width:34%;max-width:180px;
     cursor:pointer;
-    transition:transform .3s cubic-bezier(.34,1.56,.64,1);
     filter:drop-shadow(0 6px 8px rgba(0,0,0,.25));
     z-index:3;
   }
-  .cat:hover{transform:translateY(-3px) rotate(-2deg)}
+  .cat:hover{filter:drop-shadow(0 10px 12px rgba(0,0,0,.3)) brightness(1.05)}
   .cat.bounce{animation:catBounce .5s cubic-bezier(.34,1.56,.64,1)}
   @keyframes catBounce{
     0%{transform:translateY(0) rotate(0)}
@@ -436,15 +433,205 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   body.night .toast{background:var(--cream);color:var(--ink)}
 
-  /* reduced motion */
+  /* ===== Entrance animations (staggered) ===== */
+  .stamp,.status,.title,.actions,.stats,.scene,.marquee,.foot{
+    opacity:0;
+    animation:fadeUp .8s cubic-bezier(.22,1,.36,1) forwards;
+  }
+  .stamp{animation-delay:.05s}
+  .status{animation-delay:.15s}
+  .title{animation-delay:.3s}
+  .actions{animation-delay:.45s}
+  .stats{animation-delay:.6s}
+  .scene{animation-delay:.25s}
+  .marquee{animation-delay:.7s}
+  .foot{animation-delay:.8s}
+  @keyframes fadeUp{
+    0%{opacity:0;transform:translateY(24px)}
+    100%{opacity:1;transform:translateY(0)}
+  }
+  /* scene scales in slightly */
+  .scene{transform-origin:center}
+
+  /* ===== 418 number: breathing + shimmer ===== */
+  h1.status .num{
+    background:linear-gradient(110deg,var(--amber) 0%,#FFC78A 25%,var(--amber-deep) 50%,#FFC78A 75%,var(--amber) 100%);
+    background-size:300% 100%;
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:numShimmer 4s linear infinite,numBreathe 3.5s ease-in-out infinite;
+    display:inline-block;
+    filter:drop-shadow(0 4px 0 rgba(232,99,42,.15));
+  }
+  @keyframes numShimmer{0%{background-position:0% 0}100%{background-position:300% 0}}
+  @keyframes numBreathe{
+    0%,100%{transform:scale(1) rotate(-1deg)}
+    50%{transform:scale(1.04) rotate(1deg)}
+  }
+
+  /* ===== Stamp wobble ===== */
+  .stamp{animation:stampIn .8s cubic-bezier(.22,1,.36,1) .05s forwards,stampWobble 6s ease-in-out 1s infinite}
+  @keyframes stampIn{0%{opacity:0;transform:translateY(24px) rotate(-12deg) scale(.6)}100%{opacity:1;transform:translateY(0) rotate(-2deg) scale(1)}}
+  @keyframes stampWobble{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+
+  /* ===== Title underline grow ===== */
+  h2.title{position:relative;display:inline-block}
+  h2.title::after{
+    content:"";position:absolute;left:0;bottom:-6px;height:3px;width:0;
+    background:linear-gradient(90deg,var(--amber),var(--amber-deep));
+    border-radius:2px;
+    animation:underline 1.2s ease .6s forwards;
+  }
+  @keyframes underline{to{width:100%}}
+
+  /* ===== Camera floating ===== */
+  .camera{
+    animation:camFloat 5s ease-in-out infinite;
+  }
+  @keyframes camFloat{
+    0%,100%{transform:translateX(-50%) translateY(0) rotate(0)}
+    33%{transform:translateX(-50%) translateY(-8px) rotate(-1.5deg)}
+    66%{transform:translateX(-50%) translateY(-3px) rotate(1deg)}
+  }
+  .camera:hover{animation-play-state:paused}
+
+  /* Lens aperture rotation */
+  .lens-spin{
+    transform-origin:150px 135px;
+    animation:lensSpin 12s linear infinite;
+  }
+  @keyframes lensSpin{to{transform:rotate(360deg)}}
+
+  /* Shutter button pulse */
+  .shutter-pulse{
+    transform-origin:245px 42px;
+    animation:shutterPulse 1.6s ease-in-out infinite;
+  }
+  @keyframes shutterPulse{
+    0%,100%{transform:scale(1);opacity:1}
+    50%{transform:scale(1.25);opacity:.7}
+  }
+
+  /* ===== Cat breathing ===== */
+  .cat{
+    animation:catBreathe 4s ease-in-out infinite;
+  }
+  @keyframes catBreathe{
+    0%,100%{transform:translateY(0) scale(1)}
+    50%{transform:translateY(-3px) scale(1.015)}
+  }
+  .cat.bounce{animation:catBounce .5s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes catBounce{
+    0%{transform:translateY(0) rotate(0)}
+    40%{transform:translateY(-22px) rotate(-8deg) scale(1.06)}
+    70%{transform:translateY(-6px) rotate(2deg)}
+    100%{transform:translateY(0) rotate(0)}
+  }
+  /* cat breathing overrides bounce when not bouncing — handled by re-adding breathe class */
+
+  /* ===== Celestial glow pulse ===== */
+  .celestial{
+    animation:celestialGlow 4s ease-in-out infinite;
+  }
+  @keyframes celestialGlow{
+    0%,100%{filter:brightness(1)}
+    50%{filter:brightness(1.18)}
+  }
+  body.night .celestial{animation:celestialGlowNight 5s ease-in-out infinite}
+  @keyframes celestialGlowNight{
+    0%,100%{filter:brightness(1)}
+    50%{filter:brightness(1.1)}
+  }
+
+  /* ===== Floating background particles ===== */
+  .floaters{position:fixed;inset:0;pointer-events:none;z-index:5;overflow:hidden}
+  .floater{
+    position:absolute;top:-40px;
+    font-size:18px;opacity:0;
+    animation:floatDown linear infinite;
+    will-change:transform;
+  }
+  @keyframes floatDown{
+    0%{opacity:0;transform:translateY(-40px) rotate(0deg)}
+    10%{opacity:.55}
+    90%{opacity:.55}
+    100%{opacity:0;transform:translateY(110vh) rotate(360deg)}
+  }
+  body.night .floater{opacity:.4 !important}
+
+  /* ===== Paw print trail ===== */
+  .paw-trail{
+    position:fixed;pointer-events:none;z-index:7000;
+    width:22px;height:22px;
+    transform:translate(-50%,-50%) rotate(var(--r,0deg));
+    opacity:0;animation:pawFade 1.4s ease-out forwards;
+  }
+  .paw-trail svg{width:100%;height:100%}
+  @keyframes pawFade{
+    0%{opacity:.7;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(.6)}
+    20%{opacity:.7;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(1)}
+    100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(1.1)}
+  }
+
+  /* ===== Button hover wiggle ===== */
+  .btn{position:relative;overflow:hidden}
+  .btn::before{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);
+    transform:translateX(-120%);
+    transition:none;
+  }
+  .btn:hover::before{animation:shine .8s ease}
+  @keyframes shine{to{transform:translateX(120%)}}
+  .btn:hover svg{animation:iconWiggle .5s ease}
+  @keyframes iconWiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg) scale(1.15)}75%{transform:rotate(12deg) scale(1.15)}}
+
+  /* ===== Dot pulse enhance ===== */
+  .dot{animation:pulse 2s ease-in-out infinite,dotFloat 3s ease-in-out infinite}
+  @keyframes dotFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+
+  /* ===== Polaroid float after shown ===== */
+  .polaroid.show{animation:polIn .5s cubic-bezier(.34,1.56,.64,1),polFloat 4s ease-in-out .5s infinite}
+  @keyframes polIn{
+    0%{transform:rotate(0) translateY(40px) scale(.6);opacity:0}
+    100%{transform:rotate(8deg) translateY(0) scale(1);opacity:1}
+  }
+  @keyframes polFloat{
+    0%,100%{transform:rotate(8deg) translateY(0)}
+    50%{transform:rotate(6deg) translateY(-8px)}
+  }
+
+  /* ===== Stars twinkle (night) ===== */
+  .star{animation:twinkle 3s ease-in-out infinite,starDrift 12s linear infinite}
+  @keyframes starDrift{0%{transform:translate(0,0)}100%{transform:translate(20px,10px)}}
+
+  /* ===== String pegs sway ===== */
+  .peg{transform-origin:top center;animation:pegSway 4s ease-in-out infinite}
+  .peg:nth-child(2){animation-delay:.3s}
+  .peg:nth-child(3){animation-delay:.6s}
+  .peg:nth-child(4){animation-delay:.9s}
+  .peg:nth-child(5){animation-delay:1.2s}
+  @keyframes pegSway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+
+  /* ===== Ground shadow pulse ===== */
+  .ground{position:relative;overflow:hidden}
+  .ground::after{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(ellipse at 50% 0%,rgba(255,255,255,.08),transparent 60%);
+    animation:groundShimmer 5s ease-in-out infinite;
+  }
+  @keyframes groundShimmer{0%,100%{opacity:.5}50%{opacity:1}}
+
+  /* ===== reduced motion */
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+    .floaters,.paw-trail{display:none}
   }
 </style>
 </head>
 <body>
 <div class="grain" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
+<div class="floaters" id="floaters" aria-hidden="true"></div>
 
 <div class="stage">
 
@@ -452,11 +639,10 @@
   <header class="topbar">
     <div class="left">
       <span class="dot"></span>
-      <span>橘猫相机店 · ORANGE CAT CAMERA CO.</span>
-      <span>EST. 2024</span>
+      <span>橘猫相机店</span>
     </div>
     <div class="right">
-      <span class="rec">● REC 04:18</span>
+      <span class="rec">● REC</span>
       <button class="toggle" id="themeToggle" aria-label="切换昼夜模式">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
         <span id="themeLabel">夜间</span>
@@ -469,41 +655,34 @@
     <section class="copy">
       <span class="stamp">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5z"/></svg>
-        HTTP 418 · 服务离线
+        HTTP 418
       </span>
 
       <h1 class="status">
         <span class="num">418</span>
-        <span class="teapot">— I'm a teapot, &amp; a sleeping cat.</span>
       </h1>
 
-      <h2 class="title">网站维护中 <em>·</em> 停止访问</h2>
-
-      <p class="lede">
-        快门正在更换胶卷，橘猫店员正在打盹。本站已进入例行保养状态，
-        暂时无法接待访客。请稍后再来，或者摸摸店员消磨时间 ——
-        它不会介意的，大概。
-      </p>
+      <h2 class="title">维护中 <em>·</em> 停止访问</h2>
 
       <div class="actions">
         <button class="btn" id="petBtn" aria-label="摸摸橘猫">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-          摸摸橘猫 <span id="petCount">0</span>
+          摸猫 <span id="petCount">0</span>
         </button>
         <button class="btn ghost" id="shutterBtn" aria-label="按下快门">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          按下快门
+          拍照
         </button>
         <button class="btn ghost" id="meowBtn" aria-label="喵一声">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10v4M7 7v10M11 4v16M15 7v10M19 10v4"/></svg>
-          喵一声
+          喵
         </button>
       </div>
 
       <div class="stats">
-        <div class="stat"><b id="statVisits">0</b>被打扰次数</div>
-        <div class="stat"><b id="statPhotos">0</b>胶片消耗</div>
-        <div class="stat"><b id="statMeows">0</b>喵叫记录</div>
+        <div class="stat"><b id="statVisits">0</b>打扰</div>
+        <div class="stat"><b id="statPhotos">0</b>胶片</div>
+        <div class="stat"><b id="statMeows">0</b>喵叫</div>
       </div>
     </section>
 
@@ -545,7 +724,16 @@
         <circle cx="150" cy="135" r="62" fill="url(#camMetal)" stroke="#0F0B08" stroke-width="3"/>
         <circle cx="150" cy="135" r="52" fill="#1A1410" stroke="#0F0B08" stroke-width="2"/>
         <circle cx="150" cy="135" r="44" fill="#2A2A2A"/>
-        <circle cx="150" cy="135" r="38" fill="url(#lens)" stroke="#0A0808" stroke-width="2"/>
+        <g class="lens-spin">
+          <circle cx="150" cy="135" r="38" fill="url(#lens)" stroke="#0A0808" stroke-width="2"/>
+          <!-- Aperture blades hint -->
+          <g stroke="rgba(255,255,255,.18)" stroke-width="1" fill="none">
+            <line x1="150" y1="100" x2="150" y2="170"/>
+            <line x1="115" y1="135" x2="185" y2="135"/>
+            <line x1="125" y1="110" x2="175" y2="160"/>
+            <line x1="175" y1="110" x2="125" y2="160"/>
+          </g>
+        </g>
         <!-- Lens reflection -->
         <ellipse cx="138" cy="123" rx="10" ry="6" fill="#fff" opacity=".35"/>
         <ellipse cx="160" cy="148" rx="6" ry="3" fill="#fff" opacity=".15"/>
@@ -561,8 +749,10 @@
           <line x1="114" y1="171" x2="110" y2="175"/>
         </g>
         <!-- Shutter button -->
-        <circle cx="245" cy="42" r="9" fill="#E8632A" stroke="#0F0B08" stroke-width="2"/>
-        <circle cx="243" cy="40" r="3" fill="#FFB07A" opacity=".7"/>
+        <g class="shutter-pulse">
+          <circle cx="245" cy="42" r="9" fill="#E8632A" stroke="#0F0B08" stroke-width="2"/>
+          <circle cx="243" cy="40" r="3" fill="#FFB07A" opacity=".7"/>
+        </g>
         <!-- Brand text -->
         <text x="150" y="186" text-anchor="middle" font-family="Fraunces, serif" font-style="italic" font-size="11" fill="#D9C9A8" font-weight="700">ORANGECAT</text>
         <!-- Dial -->
@@ -684,14 +874,14 @@
   <!-- ===== Marquee ===== -->
   <div class="marquee" aria-hidden="true">
     <div class="marquee-track">
-      <span>网站维护中</span><span>MAINTENANCE IN PROGRESS</span><span>停止访问</span><span>PLEASE COME BACK LATER</span><span>橘猫打盹中</span><span>HTTP 418 I'M A TEAPOT</span><span>网站维护中</span><span>MAINTENANCE IN PROGRESS</span><span>停止访问</span><span>PLEASE COME BACK LATER</span><span>橘猫打盹中</span><span>HTTP 418 I'M A TEAPOT</span>
+      <span>维护中</span><span>MAINTENANCE</span><span>418</span><span>橘猫打盹</span><span>维护中</span><span>MAINTENANCE</span><span>418</span><span>橘猫打盹</span>
     </div>
   </div>
 
   <!-- ===== Footer ===== -->
   <footer class="foot">
-    <div>© 2024 ORANGE CAT CAMERA CO. · ALL RIGHTS RESERVED</div>
-    <div class="countdown">店员橘猫 · 正在打盹 zZz</div>
+    <div>© ORANGE CAT CAMERA CO.</div>
+    <div class="countdown">店员橘猫 · 打盹 zZz</div>
   </footer>
 </div>
 
@@ -992,6 +1182,70 @@
     else if(k === "c"){ takePhoto(); }
     else if(k === "t"){ setTheme(!state.night); showToast(state.night?"切换至夜间模式":"切换至白天模式"); }
   });
+
+  // ===== Floating background particles =====
+  var floaters = $("floaters");
+  var floaterChars = ["🐾","🐱","📸","✨","💛","🎞️","⭐","🧡"];
+  function spawnFloater(){
+    if(floaters.children.length > 14) return;
+    var el = document.createElement("div");
+    el.className = "floater";
+    el.textContent = floaterChars[Math.floor(Math.random()*floaterChars.length)];
+    el.style.left = (Math.random()*100)+"%";
+    var dur = 9 + Math.random()*8;
+    el.style.animationDuration = dur+"s";
+    el.style.fontSize = (14 + Math.random()*16)+"px";
+    el.style.animationDelay = "0s";
+    floaters.appendChild(el);
+    setTimeout(function(){ el.remove(); }, dur*1000 + 200);
+  }
+  // seed a few
+  for(var i=0;i<6;i++){ setTimeout(spawnFloater, i*900); }
+  setInterval(spawnFloater, 1400);
+
+  // ===== Paw print trail on mouse move =====
+  var pawSvg = '<svg viewBox="0 0 24 24" fill="rgba(232,99,42,.5)"><path d="M12 14c-2 0-4 1.5-4 3.5 0 1 .5 2 1.5 2 .8 0 1.2-.5 2.5-.5s1.7.5 2.5.5c1 0 1.5-1 1.5-2 0-2-2-3.5-4-3.5z"/><ellipse cx="7" cy="10" rx="1.6" ry="2"/><ellipse cx="17" cy="10" rx="1.6" ry="2"/><ellipse cx="10" cy="6.5" rx="1.4" ry="1.8"/><ellipse cx="14" cy="6.5" rx="1.4" ry="1.8"/></svg>';
+  var lastPaw = 0;
+  var pawSide = 0;
+  document.addEventListener("mousemove", function(e){
+    var now = Date.now();
+    if(now - lastPaw < 90) return;
+    lastPaw = now;
+    var p = document.createElement("div");
+    p.className = "paw-trail";
+    p.innerHTML = pawSvg;
+    p.style.left = e.clientX + "px";
+    p.style.top = e.clientY + "px";
+    pawSide = 1 - pawSide;
+    p.style.setProperty("--r", (pawSide ? -25 : 25) + "deg");
+    document.body.appendChild(p);
+    setTimeout(function(){ p.remove(); }, 1400);
+  });
+
+  // ===== Parallax: camera & cat follow mouse subtly =====
+  var parallaxRAF = null;
+  var targetX = 0, targetY = 0, curX = 0, curY = 0;
+  document.addEventListener("mousemove", function(e){
+    var w = window.innerWidth, h = window.innerHeight;
+    targetX = (e.clientX/w - 0.5);
+    targetY = (e.clientY/h - 0.5);
+    if(!parallaxRAF) parallaxRAF = requestAnimationFrame(parallaxTick);
+  });
+  function parallaxTick(){
+    curX += (targetX - curX) * 0.08;
+    curY += (targetY - curY) * 0.08;
+    // celestial & string drift opposite for depth
+    var cel = document.querySelector(".celestial");
+    if(cel) cel.style.translate = (curX * -14) + "px " + (curY * -10) + "px";
+    // scene inner shift handled via CSS vars on scene
+    scene.style.setProperty("--px", (curX * 10) + "px");
+    scene.style.setProperty("--py", (curY * 8) + "px");
+    if(Math.abs(targetX - curX) > 0.001 || Math.abs(targetY - curY) > 0.001){
+      parallaxRAF = requestAnimationFrame(parallaxTick);
+    } else {
+      parallaxRAF = null;
+    }
+  }
 
   // ===== First visit: increment visits, greet =====
   state.visits = 1;
