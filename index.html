@@ -12,19 +12,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Space+Mono:wght@400;700&family=Noto+Sans+SC:wght@300;500;700;900&display=swap" rel="stylesheet">
 <style>
   :root{
-    --cream:#F6E9D2;
-    --cream-deep:#EAD3A8;
-    --amber:#E8632A;
-    --amber-deep:#B8421A;
-    --ink:#1A1410;
-    --ink-soft:#3A2A1F;
-    --film:#0F0B08;
-    --belly:#FBE6C9;
-    --stripe:#C8541E;
-    --leaf:#5B6E3B;
-    --sky-day:#F2D9A8;
-    --sky-night:#1B1B2E;
-    --grain-op:0.08;
+    --cream:#FFF6E0;
+    --cream-deep:#FFE9B8;
+    --amber:#F2894A;
+    --amber-deep:#E8632A;
+    --ink:#4A3422;
+    --ink-soft:#7A5A40;
+    --film:#2A1F18;
+    --belly:#FFF0D4;
+    --stripe:#E07A35;
+    --leaf:#7B9656;
+    --sky-day:#FFE3A8;
+    --sky-night:#3A3858;
+    --grain-op:0.05;
     --shutter:0ms;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -40,11 +40,11 @@
     transition:background-color .8s ease,color .8s ease;
   }
   body.night{
-    background:var(--sky-night);
-    color:var(--cream);
-    --ink:var(--cream);
-    --ink-soft:#C9B79A;
-    --grain-op:0.12;
+    background:#4A4868;
+    color:#FFF6E0;
+    --ink:#FFF6E0;
+    --ink-soft:#D9C9A8;
+    --grain-op:0.08;
   }
   /* ===== Film grain overlay ===== */
   .grain{
@@ -62,9 +62,9 @@
   /* ===== Vignette ===== */
   .vignette{
     position:fixed;inset:0;pointer-events:none;z-index:8000;
-    box-shadow:inset 0 0 200px 40px rgba(26,20,16,.45);
+    box-shadow:inset 0 0 160px 20px rgba(74,52,34,.18);
   }
-  body.night .vignette{box-shadow:inset 0 0 220px 60px rgba(0,0,0,.7)}
+  body.night .vignette{box-shadow:inset 0 0 180px 40px rgba(0,0,0,.35)}
 
   /* ===== Layout ===== */
   .stage{
@@ -99,7 +99,7 @@
     transition:all .25s ease;display:flex;align-items:center;gap:6px;
   }
   .toggle:hover{background:var(--ink);color:var(--cream)}
-  body.night .toggle:hover{background:var(--cream);color:var(--sky-night)}
+  body.night .toggle:hover{background:var(--cream);color:#4A4868}
 
   /* ===== Main grid ===== */
   .main{
@@ -220,11 +220,11 @@
   }
   body.night .scene{
     background:
-      radial-gradient(120% 90% at 50% 0%,#2A2845 0%,#15152A 60%,#0A0A18 100%);
+      radial-gradient(120% 90% at 50% 0%,#5A5878 0%,#3A3858 60%,#2A2848 100%);
     box-shadow:
-      0 0 0 6px var(--sky-night),
+      0 0 0 6px #4A4868,
       0 0 0 9px var(--cream),
-      14px 14px 0 #FF8A4A;
+      14px 14px 0 #FFB07A;
   }
   @media (max-width:900px){
     .scene{max-width:420px;box-shadow:
@@ -262,7 +262,7 @@
     background:linear-gradient(180deg,#C99664 0%,#8A5A30 100%);
     border-top:3px solid var(--ink);
   }
-  body.night .ground{background:linear-gradient(180deg,#3A2E1F 0%,#1A1208 100%)}
+  body.night .ground{background:linear-gradient(180deg,#5A4A35 0%,#3A2E1F 100%)}
 
   /* Hanging photo string */
   .string{
@@ -395,13 +395,13 @@
     border-top:1px dashed rgba(26,20,16,.25);padding-top:14px;
   }
   body.night .foot{border-color:rgba(246,233,210,.2)}
-  .countdown{display:flex;gap:8px;align-items:center}
-  .countdown b{
-    font-family:"Fraunces",serif;font-weight:700;font-size:18px;
-    color:var(--amber-deep);letter-spacing:0;
+  .countdown{
+    display:flex;gap:8px;align-items:center;
+    font-family:"Fraunces",serif;font-style:italic;font-weight:600;
+    font-size:14px;color:var(--amber-deep);
     font-variation-settings:"opsz" 14;
   }
-  body.night .countdown b{color:#FF8A4A}
+  body.night .countdown{color:#FFB07A}
 
   /* ===== Marquee ===== */
   .marquee{
@@ -691,9 +691,7 @@
   <!-- ===== Footer ===== -->
   <footer class="foot">
     <div>© 2024 ORANGE CAT CAMERA CO. · ALL RIGHTS RESERVED</div>
-    <div class="countdown">
-      预计恢复 <b id="cdH">00</b>:<b id="cdM">00</b>:<b id="cdS">00</b>
-    </div>
+    <div class="countdown">店员橘猫 · 正在打盹 zZz</div>
   </footer>
 </div>
 
@@ -983,18 +981,7 @@
     $("statMeows").textContent = state.meows;
   }
 
-  // ===== Countdown (random 0-3h for vibes) =====
-  var target = Date.now() + (2*60*60 + 18*60 + 1000)*1000; // 2h 18m 1s
-  function tick(){
-    var diff = Math.max(0, target - Date.now());
-    var h = Math.floor(diff/3600000);
-    var m = Math.floor((diff%3600000)/60000);
-    var s = Math.floor((diff%60000)/1000);
-    $("cdH").textContent = String(h).padStart(2,"0");
-    $("cdM").textContent = String(m).padStart(2,"0");
-    $("cdS").textContent = String(s).padStart(2,"0");
-  }
-  setInterval(tick, 1000); tick();
+  // ===== Countdown removed — no ETA, just vibes =====
 
   // ===== Keyboard shortcuts =====
   document.addEventListener("keydown", function(e){
