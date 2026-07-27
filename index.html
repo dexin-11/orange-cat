@@ -538,10 +538,15 @@
     night: false
   };
 
-  // ===== Cat image API =====
-  var CAT_API = "https://img.hdx.dpdns.org/random";
-  function catUrl(){
-    return CAT_API + "?r=" + Math.random().toString(36).slice(2);
+  // ===== Cat image API (Cloudflare ImgBed /random?dir=backimg) =====
+  var CAT_API = "https://img.hdx.dpdns.org/random?dir=backimg";
+  var CAT_BASE = "https://img.hdx.dpdns.org";
+  // fetch a random cat image URL (JSON {url:"/file/backimg/xxx.webp"}), resolve to full URL
+  function fetchCatUrl(){
+    return fetch(CAT_API + "&r=" + Math.random().toString(36).slice(2))
+      .then(function(r){ return r.json(); })
+      .then(function(d){ return d.url ? (CAT_BASE + d.url) : null; })
+      .catch(function(){ return null; });
   }
 
   var $ = function(id){ return document.getElementById(id); };
@@ -646,18 +651,21 @@
   // ===== Cat image rotation (crossfade every ~7s) =====
   var rotateTimer = null;
   function loadCat(){
-    var inactive = active === catA ? catB : catA;
-    inactive.onload = function(){
-      inactive.classList.add("loaded");
-      // fade out the previously visible one shortly after the new one is in
-      var prev = active;
-      setTimeout(function(){ prev.classList.remove("loaded"); }, 80);
-      active = inactive;
-      inactive.onload = null;
-      inactive.onerror = null;
-    };
-    inactive.onerror = function(){ inactive.onload = null; inactive.onerror = null; };
-    inactive.src = catUrl();
+    fetchCatUrl().then(function(fullUrl){
+      if(!fullUrl) return; // keep current image on failure
+      var inactive = active === catA ? catB : catA;
+      inactive.onload = function(){
+        inactive.classList.add("loaded");
+        // fade out the previously visible one shortly after the new one is in
+        var prev = active;
+        setTimeout(function(){ prev.classList.remove("loaded"); }, 80);
+        active = inactive;
+        inactive.onload = null;
+        inactive.onerror = null;
+      };
+      inactive.onerror = function(){ inactive.onload = null; inactive.onerror = null; };
+      inactive.src = fullUrl;
+    });
   }
   // initial load
   loadCat();
@@ -742,18 +750,17 @@
 
     // pull a fresh random cat image into the polaroid
     photoNum.textContent = String(state.photos).padStart(3,"0");
-    var loader = new Image();
-    loader.onload = function(){
-      photoImg.src = loader.src;
+    function showPolaroid(){
       polaroid.classList.add("show");
       setTimeout(function(){ polaroid.classList.remove("show"); }, 3500);
-    };
-    loader.onerror = function(){
-      // still show polaroid even if image fails
-      polaroid.classList.add("show");
-      setTimeout(function(){ polaroid.classList.remove("show"); }, 3500);
-    };
-    loader.src = catUrl();
+    }
+    fetchCatUrl().then(function(fullUrl){
+      if(!fullUrl){ showPolaroid(); return; }
+      var loader = new Image();
+      loader.onload = function(){ photoImg.src = loader.src; showPolaroid(); };
+      loader.onerror = showPolaroid;
+      loader.src = fullUrl;
+    });
 
     say("咔嚓！📸");
     showToast("已拍摄 · FILM #"+String(state.photos).padStart(3,"0"));
