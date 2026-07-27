@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#1a1410" />
+<title>418 · 网站维护中 — 停止访问</title>
+<meta name="description" content="418 I'm a teapot — 网站正在维护中，请停止访问。橘猫相机店暂时打烊。" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐱%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Space+Mono:wght@400;700&family=Noto+Sans+SC:wght@300;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F6E9D2;
+    --cream-deep:#EAD3A8;
+    --amber:#E8632A;
+    --amber-deep:#B8421A;
+    --ink:#1A1410;
+    --ink-soft:#3A2A1F;
+    --film:#0F0B08;
+    --belly:#FBE6C9;
+    --stripe:#C8541E;
+    --leaf:#5B6E3B;
+    --sky-day:#F2D9A8;
+    --sky-night:#1B1B2E;
+    --grain-op:0.08;
+    --shutter:0ms;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"Noto Sans SC","Fraunces",system-ui,sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    overflow-x:hidden;
+    min-height:100vh;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    transition:background-color .8s ease,color .8s ease;
+  }
+  body.night{
+    background:var(--sky-night);
+    color:var(--cream);
+    --ink:var(--cream);
+    --ink-soft:#C9B79A;
+    --grain-op:0.12;
+  }
+  /* ===== Film grain overlay ===== */
+  .grain{
+    position:fixed;inset:0;pointer-events:none;z-index:9000;
+    opacity:var(--grain-op);mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    animation:grain 1.2s steps(4) infinite;
+  }
+  body.night .grain{mix-blend-mode:screen}
+  @keyframes grain{
+    0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}
+    50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-2%)}
+    100%{transform:translate(0,0)}
+  }
+  /* ===== Vignette ===== */
+  .vignette{
+    position:fixed;inset:0;pointer-events:none;z-index:8000;
+    box-shadow:inset 0 0 200px 40px rgba(26,20,16,.45);
+  }
+  body.night .vignette{box-shadow:inset 0 0 220px 60px rgba(0,0,0,.7)}
+
+  /* ===== Layout ===== */
+  .stage{
+    position:relative;z-index:1;
+    min-height:100vh;
+    display:grid;
+    grid-template-rows:auto 1fr auto;
+    padding:24px clamp(16px,4vw,48px);
+    gap:24px;
+  }
+  /* ===== Top bar (film strip) ===== */
+  .topbar{
+    display:flex;justify-content:space-between;align-items:center;
+    gap:16px;flex-wrap:wrap;
+    font-family:"Space Mono",monospace;font-size:12px;
+    letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ink-soft);
+    border-bottom:1px dashed rgba(26,20,16,.25);
+    padding-bottom:14px;
+  }
+  body.night .topbar{border-color:rgba(246,233,210,.2)}
+  .topbar .left{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--amber);box-shadow:0 0 0 3px rgba(232,99,42,.18);animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{50%{transform:scale(1.3);box-shadow:0 0 0 6px rgba(232,99,42,.05)}}
+  .topbar .right{display:flex;gap:18px;align-items:center}
+  .rec{color:var(--amber-deep);font-weight:700}
+  body.night .rec{color:#FF8A4A}
+  .toggle{
+    border:1px solid currentColor;background:transparent;color:inherit;
+    font-family:inherit;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    padding:6px 12px;border-radius:999px;cursor:pointer;
+    transition:all .25s ease;display:flex;align-items:center;gap:6px;
+  }
+  .toggle:hover{background:var(--ink);color:var(--cream)}
+  body.night .toggle:hover{background:var(--cream);color:var(--sky-night)}
+
+  /* ===== Main grid ===== */
+  .main{
+    display:grid;
+    grid-template-columns:1.1fr 1fr;
+    gap:clamp(24px,5vw,64px);
+    align-items:center;
+  }
+  @media (max-width:900px){
+    .main{grid-template-columns:1fr;text-align:center}
+  }
+
+  /* ===== Left: typography block ===== */
+  .copy{position:relative}
+  .stamp{
+    display:inline-flex;align-items:center;gap:10px;
+    font-family:"Space Mono",monospace;font-size:12px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--amber-deep);
+    padding:8px 14px;border:1.5px solid var(--amber-deep);
+    border-radius:4px;transform:rotate(-2deg);
+    margin-bottom:24px;
+    background:rgba(232,99,42,.06);
+  }
+  body.night .stamp{color:#FF8A4A;border-color:#FF8A4A;background:rgba(255,138,74,.08)}
+  .stamp svg{width:14px;height:14px}
+
+  h1.status{
+    font-family:"Fraunces",serif;
+    font-weight:900;
+    font-variation-settings:"opsz" 144,"SOFT" 30;
+    font-size:clamp(96px,18vw,220px);
+    line-height:.85;
+    letter-spacing:-.04em;
+    color:var(--ink);
+    margin-bottom:8px;
+    position:relative;
+  }
+  h1.status .num{
+    display:inline-block;
+    background:linear-gradient(180deg,var(--amber) 0%,var(--amber-deep) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 2px 0 rgba(184,66,26,.12);
+  }
+  h1.status .teapot{
+    font-family:"Fraunces",serif;font-style:italic;font-weight:400;
+    font-size:.18em;letter-spacing:.02em;color:var(--ink-soft);
+    display:block;margin-top:8px;
+    font-variation-settings:"opsz" 14;
+  }
+  body.night h1.status .teapot{color:var(--ink-soft)}
+
+  h2.title{
+    font-family:"Fraunces",serif;font-weight:600;
+    font-variation-settings:"opsz" 60,"SOFT" 50;
+    font-size:clamp(28px,4.2vw,48px);
+    line-height:1.05;letter-spacing:-.02em;
+    margin:18px 0 12px;
+  }
+  h2.title em{
+    font-style:italic;font-weight:400;color:var(--amber-deep);
+    font-variation-settings:"opsz" 60,"SOFT" 100;
+  }
+  body.night h2.title em{color:#FF8A4A}
+
+  p.lede{
+    font-size:clamp(15px,1.6vw,17px);
+    color:var(--ink-soft);max-width:46ch;
+    margin-bottom:28px;
+  }
+  @media (max-width:900px){p.lede{margin-inline:auto}}
+
+  /* ===== Action buttons ===== */
+  .actions{display:flex;gap:12px;flex-wrap:wrap}
+  @media (max-width:900px){.actions{justify-content:center}}
+  .btn{
+    font-family:"Space Mono",monospace;font-size:13px;letter-spacing:.06em;
+    text-transform:uppercase;font-weight:700;
+    padding:14px 22px;border-radius:6px;cursor:pointer;
+    border:2px solid var(--ink);background:var(--ink);color:var(--cream);
+    display:inline-flex;align-items:center;gap:10px;
+    transition:transform .15s ease,box-shadow .15s ease,background .2s ease;
+    box-shadow:4px 4px 0 var(--amber-deep);
+    user-select:none;
+  }
+  .btn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--amber-deep)}
+  .btn:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--amber-deep)}
+  .btn.ghost{background:transparent;color:var(--ink);box-shadow:4px 4px 0 var(--ink)}
+  .btn.ghost:hover{box-shadow:6px 6px 0 var(--ink)}
+  body.night .btn.ghost{color:var(--cream);border-color:var(--cream);box-shadow:4px 4px 0 var(--cream)}
+  body.night .btn.ghost:hover{box-shadow:6px 6px 0 var(--cream)}
+  .btn svg{width:16px;height:16px}
+
+  /* ===== Stats strip ===== */
+  .stats{
+    margin-top:32px;display:flex;gap:24px;flex-wrap:wrap;
+    font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--ink-soft);
+  }
+  @media (max-width:900px){.stats{justify-content:center}}
+  .stat b{display:block;font-size:20px;color:var(--ink);font-weight:700;margin-bottom:2px;letter-spacing:0}
+  body.night .stat b{color:var(--cream)}
+
+  /* ===== Right: camera + cat scene ===== */
+  .scene{
+    position:relative;
+    aspect-ratio:1/1.05;
+    max-width:560px;width:100%;margin:0 auto;
+    border-radius:18px;
+    background:
+      radial-gradient(120% 90% at 50% 0%,var(--sky-day) 0%,var(--cream-deep) 60%,#D9B988 100%);
+    border:3px solid var(--ink);
+    overflow:hidden;
+    box-shadow:
+      0 0 0 6px var(--cream),
+      0 0 0 9px var(--ink),
+      14px 14px 0 var(--amber-deep);
+    transition:background .8s ease,box-shadow .3s ease;
+  }
+  body.night .scene{
+    background:
+      radial-gradient(120% 90% at 50% 0%,#2A2845 0%,#15152A 60%,#0A0A18 100%);
+    box-shadow:
+      0 0 0 6px var(--sky-night),
+      0 0 0 9px var(--cream),
+      14px 14px 0 #FF8A4A;
+  }
+  @media (max-width:900px){
+    .scene{max-width:420px;box-shadow:
+      0 0 0 4px var(--cream),0 0 0 7px var(--ink),8px 8px 0 var(--amber-deep)}
+  }
+
+  /* Sun / Moon */
+  .celestial{
+    position:absolute;top:8%;right:12%;
+    width:64px;height:64px;border-radius:50%;
+    background:radial-gradient(circle at 35% 35%,#FFE8A0,#F4B73C 70%,#E8932A);
+    box-shadow:0 0 50px 10px rgba(244,183,60,.45);
+    transition:all .8s ease;
+  }
+  body.night .celestial{
+    background:radial-gradient(circle at 35% 35%,#FFFCE8,#E8E4C9 70%,#9C9778);
+    box-shadow:0 0 40px 8px rgba(255,252,232,.25);
+  }
+  body.night .celestial::before{
+    content:"";position:absolute;top:18%;left:55%;width:14px;height:14px;
+    border-radius:50%;background:#9C9778;box-shadow:
+      18px 8px 0 -4px #9C9778,
+      -6px 22px 0 -5px #9C9778;
+  }
+
+  /* Stars (night) */
+  .stars{position:absolute;inset:0;opacity:0;transition:opacity .8s ease;pointer-events:none}
+  body.night .stars{opacity:1}
+  .star{position:absolute;background:#FFFCE8;border-radius:50%;animation:twinkle 3s ease-in-out infinite}
+  @keyframes twinkle{50%{opacity:.3;transform:scale(.6)}}
+
+  /* Ground / table */
+  .ground{
+    position:absolute;bottom:0;left:0;right:0;height:32%;
+    background:linear-gradient(180deg,#C99664 0%,#8A5A30 100%);
+    border-top:3px solid var(--ink);
+  }
+  body.night .ground{background:linear-gradient(180deg,#3A2E1F 0%,#1A1208 100%)}
+
+  /* Hanging photo string */
+  .string{
+    position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:80%;height:60px;display:flex;justify-content:space-around;
+    pointer-events:none;
+  }
+  .peg{
+    width:1.5px;height:60px;background:rgba(26,20,16,.4);
+    position:relative;
+  }
+  .peg::after{
+    content:"";position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);
+    width:8px;height:8px;background:var(--ink);border-radius:2px;
+  }
+  body.night .peg{background:rgba(246,233,210,.3)}
+
+  /* ===== Camera body ===== */
+  .camera{
+    position:absolute;left:50%;bottom:24%;transform:translateX(-50%);
+    width:62%;max-width:340px;cursor:pointer;
+    transition:transform .25s cubic-bezier(.34,1.56,.64,1);
+    filter:drop-shadow(0 8px 12px rgba(0,0,0,.25));
+  }
+  .camera:hover{transform:translateX(-50%) translateY(-4px) rotate(-1deg)}
+  .camera:active{transform:translateX(-50%) translateY(0) scale(.98)}
+
+  /* ===== Cat (sits on/next to camera) ===== */
+  .cat{
+    position:absolute;left:18%;bottom:30%;
+    width:34%;max-width:180px;
+    cursor:pointer;
+    transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+    filter:drop-shadow(0 6px 8px rgba(0,0,0,.25));
+    z-index:3;
+  }
+  .cat:hover{transform:translateY(-3px) rotate(-2deg)}
+  .cat.bounce{animation:catBounce .5s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes catBounce{
+    0%{transform:translateY(0) rotate(0)}
+    40%{transform:translateY(-22px) rotate(-8deg) scale(1.06)}
+    70%{transform:translateY(-6px) rotate(2deg)}
+    100%{transform:translateY(0) rotate(0)}
+  }
+  .cat .tail{
+    transform-origin:90% 80%;
+    animation:tailWag 3s ease-in-out infinite;
+  }
+  .cat.excited .tail{animation-duration:.6s}
+  @keyframes tailWag{
+    0%,100%{transform:rotate(-6deg)}
+    50%{transform:rotate(14deg)}
+  }
+  .cat .pupil{transition:transform .15s ease-out}
+  .cat .lid{transform-origin:center;transform:scaleY(0);transition:transform .12s ease}
+  .cat.blinking .lid{transform:scaleY(1)}
+
+  /* Speech bubble */
+  .bubble{
+    position:absolute;
+    background:var(--cream);color:var(--ink);
+    border:2.5px solid var(--ink);border-radius:14px;
+    padding:8px 14px;font-family:"Fraunces",serif;font-style:italic;
+    font-weight:600;font-size:15px;white-space:nowrap;
+    box-shadow:3px 3px 0 var(--amber-deep);
+    opacity:0;transform:translateY(8px) scale(.9);transform-origin:bottom left;
+    transition:opacity .25s ease,transform .25s cubic-bezier(.34,1.56,.64,1);
+    pointer-events:none;z-index:10;
+    top:-8%;left:42%;
+  }
+  .bubble.show{opacity:1;transform:translateY(0) scale(1)}
+  .bubble::after{
+    content:"";position:absolute;bottom:-10px;left:18%;
+    width:0;height:0;border:8px solid transparent;border-top-color:var(--ink);
+  }
+  .bubble::before{
+    content:"";position:absolute;bottom:-7px;left:20%;
+    width:0;height:0;border:6px solid transparent;border-top-color:var(--cream);
+    z-index:1;
+  }
+
+  /* Hearts */
+  .heart{
+    position:absolute;width:18px;height:18px;pointer-events:none;
+    z-index:20;animation:floatHeart 1.4s ease-out forwards;
+  }
+  @keyframes floatHeart{
+    0%{opacity:1;transform:translate(0,0) scale(.4) rotate(0)}
+    20%{transform:translate(8px,-20px) scale(1) rotate(10deg)}
+    100%{opacity:0;transform:translate(var(--dx,40px),-120px) scale(.6) rotate(25deg)}
+  }
+
+  /* Shutter flash */
+  .flash{
+    position:absolute;inset:0;background:#fff;opacity:0;
+    pointer-events:none;z-index:50;border-radius:inherit;
+  }
+  .flash.fire{animation:flashAnim .5s ease-out}
+  @keyframes flashAnim{
+    0%{opacity:0}10%{opacity:1}100%{opacity:0}
+  }
+
+  /* Photo that pops out */
+  .polaroid{
+    position:absolute;right:-6%;bottom:-8%;width:34%;
+    background:#fff;padding:8px 8px 30px;border-radius:3px;
+    box-shadow:0 8px 18px rgba(0,0,0,.25);
+    transform:rotate(8deg) translateY(20px) scale(.7);
+    opacity:0;transition:all .5s cubic-bezier(.34,1.56,.64,1);
+    pointer-events:none;z-index:4;
+  }
+  .polaroid.show{transform:rotate(8deg) translateY(0) scale(1);opacity:1}
+  .polaroid .pic{
+    aspect-ratio:1/1;background:#222;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;border-radius:2px;
+  }
+  .polaroid .pic img{width:100%;height:100%;object-fit:cover;filter:sepia(.2) contrast(1.05)}
+  .polaroid .cap{
+    font-family:"Space Mono",monospace;font-size:9px;color:#1A1410;
+    text-align:center;margin-top:6px;letter-spacing:.05em;
+  }
+
+  /* ===== Footer ===== */
+  .foot{
+    display:flex;justify-content:space-between;align-items:center;gap:16px;
+    flex-wrap:wrap;
+    font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--ink-soft);
+    border-top:1px dashed rgba(26,20,16,.25);padding-top:14px;
+  }
+  body.night .foot{border-color:rgba(246,233,210,.2)}
+  .countdown{display:flex;gap:8px;align-items:center}
+  .countdown b{
+    font-family:"Fraunces",serif;font-weight:700;font-size:18px;
+    color:var(--amber-deep);letter-spacing:0;
+    font-variation-settings:"opsz" 14;
+  }
+  body.night .countdown b{color:#FF8A4A}
+
+  /* ===== Marquee ===== */
+  .marquee{
+    overflow:hidden;white-space:nowrap;
+    border-top:1px solid rgba(26,20,16,.15);
+    border-bottom:1px solid rgba(26,20,16,.15);
+    background:var(--ink);color:var(--cream);
+    padding:8px 0;margin:0 calc(-1 * clamp(16px,4vw,48px));
+    margin-top:8px;
+  }
+  body.night .marquee{background:var(--cream);color:var(--ink)}
+  .marquee-track{
+    display:inline-block;animation:scroll 30s linear infinite;
+    font-family:"Space Mono",monospace;font-size:12px;letter-spacing:.18em;
+  }
+  .marquee-track span{margin:0 24px}
+  .marquee-track span::before{content:"●";color:var(--amber);margin-right:24px}
+  body.night .marquee-track span::before{color:#FF8A4A}
+  @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+  /* ===== Toast ===== */
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(100px);
+    background:var(--ink);color:var(--cream);
+    padding:12px 22px;border-radius:999px;
+    font-family:"Space Mono",monospace;font-size:12px;letter-spacing:.06em;
+    text-transform:uppercase;z-index:9500;
+    box-shadow:0 8px 24px rgba(0,0,0,.3);
+    opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);
+    pointer-events:none;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  body.night .toast{background:var(--cream);color:var(--ink)}
+
+  /* reduced motion */
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+  }
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<div class="stage">
+
+  <!-- ===== Top bar ===== -->
+  <header class="topbar">
+    <div class="left">
+      <span class="dot"></span>
+      <span>橘猫相机店 · ORANGE CAT CAMERA CO.</span>
+      <span>EST. 2024</span>
+    </div>
+    <div class="right">
+      <span class="rec">● REC 04:18</span>
+      <button class="toggle" id="themeToggle" aria-label="切换昼夜模式">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <span id="themeLabel">夜间</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== Main ===== -->
+  <main class="main">
+    <section class="copy">
+      <span class="stamp">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5z"/></svg>
+        HTTP 418 · 服务离线
+      </span>
+
+      <h1 class="status">
+        <span class="num">418</span>
+        <span class="teapot">— I'm a teapot, &amp; a sleeping cat.</span>
+      </h1>
+
+      <h2 class="title">网站维护中 <em>·</em> 停止访问</h2>
+
+      <p class="lede">
+        快门正在更换胶卷，橘猫店员正在打盹。本站已进入例行保养状态，
+        暂时无法接待访客。请稍后再来，或者摸摸店员消磨时间 ——
+        它不会介意的，大概。
+      </p>
+
+      <div class="actions">
+        <button class="btn" id="petBtn" aria-label="摸摸橘猫">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          摸摸橘猫 <span id="petCount">0</span>
+        </button>
+        <button class="btn ghost" id="shutterBtn" aria-label="按下快门">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          按下快门
+        </button>
+        <button class="btn ghost" id="meowBtn" aria-label="喵一声">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10v4M7 7v10M11 4v16M15 7v10M19 10v4"/></svg>
+          喵一声
+        </button>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><b id="statVisits">0</b>被打扰次数</div>
+        <div class="stat"><b id="statPhotos">0</b>胶片消耗</div>
+        <div class="stat"><b id="statMeows">0</b>喵叫记录</div>
+      </div>
+    </section>
+
+    <!-- ===== Scene ===== -->
+    <section class="scene" id="scene" aria-label="橘猫与相机互动场景">
+      <div class="stars" id="stars"></div>
+      <div class="celestial"></div>
+      <div class="string">
+        <div class="peg"></div><div class="peg"></div><div class="peg"></div>
+        <div class="peg"></div><div class="peg"></div>
+      </div>
+      <div class="ground"></div>
+
+      <!-- Camera SVG -->
+      <svg class="camera" id="camera" viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="复古相机">
+        <defs>
+          <linearGradient id="camBody" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#3A2A1F"/><stop offset="1" stop-color="#1A1410"/>
+          </linearGradient>
+          <linearGradient id="camMetal" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#D9C9A8"/><stop offset="1" stop-color="#8A7A5A"/>
+          </linearGradient>
+          <radialGradient id="lens" cx="0.4" cy="0.4">
+            <stop offset="0" stop-color="#5BC7E8"/><stop offset=".5" stop-color="#1A5A78"/><stop offset="1" stop-color="#0A1A28"/>
+          </radialGradient>
+        </defs>
+        <!-- Body -->
+        <rect x="20" y="60" width="260" height="140" rx="14" fill="url(#camBody)" stroke="#0F0B08" stroke-width="3"/>
+        <!-- Top panel -->
+        <rect x="40" y="50" width="220" height="30" rx="6" fill="#2A1F18" stroke="#0F0B08" stroke-width="2"/>
+        <!-- Viewfinder -->
+        <rect x="210" y="20" width="50" height="40" rx="6" fill="url(#camBody)" stroke="#0F0B08" stroke-width="3"/>
+        <rect x="220" y="30" width="30" height="22" rx="3" fill="#0A0808"/>
+        <circle cx="235" cy="41" r="6" fill="#1A3A4A"/>
+        <!-- Hot shoe -->
+        <rect x="60" y="28" width="36" height="22" rx="2" fill="#D9C9A8" stroke="#0F0B08" stroke-width="2"/>
+        <rect x="66" y="34" width="24" height="10" fill="#0F0B08"/>
+        <!-- Lens housing -->
+        <circle cx="150" cy="135" r="62" fill="url(#camMetal)" stroke="#0F0B08" stroke-width="3"/>
+        <circle cx="150" cy="135" r="52" fill="#1A1410" stroke="#0F0B08" stroke-width="2"/>
+        <circle cx="150" cy="135" r="44" fill="#2A2A2A"/>
+        <circle cx="150" cy="135" r="38" fill="url(#lens)" stroke="#0A0808" stroke-width="2"/>
+        <!-- Lens reflection -->
+        <ellipse cx="138" cy="123" rx="10" ry="6" fill="#fff" opacity=".35"/>
+        <ellipse cx="160" cy="148" rx="6" ry="3" fill="#fff" opacity=".15"/>
+        <!-- Aperture marks -->
+        <g stroke="#D9C9A8" stroke-width="1.2" fill="none">
+          <line x1="150" y1="78" x2="150" y2="84"/>
+          <line x1="150" y1="186" x2="150" y2="192"/>
+          <line x1="93" y1="135" x2="99" y2="135"/>
+          <line x1="201" y1="135" x2="207" y2="135"/>
+          <line x1="110" y1="95" x2="114" y2="99"/>
+          <line x1="186" y1="171" x2="190" y2="175"/>
+          <line x1="190" y1="95" x2="186" y2="99"/>
+          <line x1="114" y1="171" x2="110" y2="175"/>
+        </g>
+        <!-- Shutter button -->
+        <circle cx="245" cy="42" r="9" fill="#E8632A" stroke="#0F0B08" stroke-width="2"/>
+        <circle cx="243" cy="40" r="3" fill="#FFB07A" opacity=".7"/>
+        <!-- Brand text -->
+        <text x="150" y="186" text-anchor="middle" font-family="Fraunces, serif" font-style="italic" font-size="11" fill="#D9C9A8" font-weight="700">ORANGECAT</text>
+        <!-- Dial -->
+        <circle cx="80" cy="65" r="10" fill="#D9C9A8" stroke="#0F0B08" stroke-width="2"/>
+        <text x="80" y="69" text-anchor="middle" font-family="Space Mono, monospace" font-size="8" fill="#1A1410" font-weight="700">418</text>
+        <!-- Strap mounts -->
+        <rect x="14" y="100" width="8" height="14" rx="2" fill="#D9C9A8" stroke="#0F0B08" stroke-width="2"/>
+        <rect x="278" y="100" width="8" height="14" rx="2" fill="#D9C9A8" stroke="#0F0B08" stroke-width="2"/>
+        <!-- Flash -->
+        <rect x="36" y="78" width="18" height="12" rx="2" fill="#FFEEC0" stroke="#0F0B08" stroke-width="2"/>
+      </svg>
+
+      <!-- Cat SVG -->
+      <svg class="cat" id="cat" viewBox="0 0 220 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="橘猫店员">
+        <defs>
+          <radialGradient id="fur" cx="0.5" cy="0.4">
+            <stop offset="0" stop-color="#F8B05C"/><stop offset="1" stop-color="#D97A28"/>
+          </radialGradient>
+          <linearGradient id="bellyG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FBE6C9"/><stop offset="1" stop-color="#F0CFA0"/>
+          </linearGradient>
+        </defs>
+        <!-- Tail -->
+        <g class="tail">
+          <path d="M170 170 Q210 150 205 110 Q200 85 178 88 Q170 95 175 110 Q180 130 160 150 Z"
+                fill="url(#fur)" stroke="#1A1410" stroke-width="3"/>
+          <!-- Tail stripes -->
+          <path d="M195 110 Q200 100 188 100" stroke="#B8421A" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M200 130 Q206 125 196 122" stroke="#B8421A" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M188 150 Q196 145 184 142" stroke="#B8421A" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </g>
+
+        <!-- Body (sitting) -->
+        <ellipse cx="110" cy="180" rx="65" ry="50" fill="url(#fur)" stroke="#1A1410" stroke-width="3"/>
+        <!-- Belly -->
+        <ellipse cx="110" cy="195" rx="35" ry="30" fill="url(#bellyG)"/>
+        <!-- Front paws -->
+        <ellipse cx="80" cy="220" rx="14" ry="10" fill="#F8B05C" stroke="#1A1410" stroke-width="3"/>
+        <ellipse cx="140" cy="220" rx="14" ry="10" fill="#F8B05C" stroke="#1A1410" stroke-width="3"/>
+        <!-- Paw pads -->
+        <circle cx="78" cy="222" r="2.5" fill="#B8421A"/>
+        <circle cx="82" cy="222" r="2.5" fill="#B8421A"/>
+        <circle cx="138" cy="222" r="2.5" fill="#B8421A"/>
+        <circle cx="142" cy="222" r="2.5" fill="#B8421A"/>
+
+        <!-- Body stripes -->
+        <path d="M55 175 Q60 168 50 165" stroke="#B8421A" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M165 175 Q160 168 170 165" stroke="#B8421A" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M75 155 Q72 148 80 146" stroke="#B8421A" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M145 155 Q148 148 140 146" stroke="#B8421A" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+        <!-- Head -->
+        <circle cx="110" cy="105" r="58" fill="url(#fur)" stroke="#1A1410" stroke-width="3"/>
+        <!-- Ears -->
+        <path d="M62 80 L52 30 L92 60 Z" fill="url(#fur)" stroke="#1A1410" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M158 80 L168 30 L128 60 Z" fill="url(#fur)" stroke="#1A1410" stroke-width="3" stroke-linejoin="round"/>
+        <!-- Inner ears -->
+        <path d="M68 70 L62 42 L84 60 Z" fill="#F0A890"/>
+        <path d="M152 70 L158 42 L136 60 Z" fill="#F0A890"/>
+
+        <!-- Forehead stripes (M shape) -->
+        <path d="M88 65 L98 85 L110 70 L122 85 L132 65" stroke="#B8421A" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M95 58 Q100 70 95 78" stroke="#B8421A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M125 58 Q120 70 125 78" stroke="#B8421A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+        <!-- Cheek stripes -->
+        <path d="M55 100 Q48 102 50 108" stroke="#B8421A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M55 112 Q48 114 50 118" stroke="#B8421A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M165 100 Q172 102 170 108" stroke="#B8421A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M165 112 Q172 114 170 118" stroke="#B8421A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+        <!-- Eyes (white) -->
+        <ellipse cx="85" cy="100" rx="11" ry="13" fill="#FFF" stroke="#1A1410" stroke-width="2.5"/>
+        <ellipse cx="135" cy="100" rx="11" ry="13" fill="#FFF" stroke="#1A1410" stroke-width="2.5"/>
+        <!-- Pupils (moveable) -->
+        <g class="pupil" id="pupilL"><ellipse cx="85" cy="100" rx="5" ry="9" fill="#1A1410"/><circle cx="87" cy="96" r="2" fill="#fff"/><circle cx="83" cy="103" r="1.2" fill="#fff" opacity=".7"/></g>
+        <g class="pupil" id="pupilR"><ellipse cx="135" cy="100" rx="5" ry="9" fill="#1A1410"/><circle cx="137" cy="96" r="2" fill="#fff"/><circle cx="133" cy="103" r="1.2" fill="#fff" opacity=".7"/></g>
+        <!-- Eyelids (for blink) -->
+        <ellipse class="lid" id="lidL" cx="85" cy="100" rx="12" ry="13.5" fill="url(#fur)"/>
+        <ellipse class="lid" id="lidR" cx="135" cy="100" rx="12" ry="13.5" fill="url(#fur)"/>
+
+        <!-- Nose -->
+        <path d="M104 122 L116 122 L110 130 Z" fill="#B8421A" stroke="#1A1410" stroke-width="2"/>
+        <!-- Mouth -->
+        <path d="M110 130 Q110 138 102 140" stroke="#1A1410" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M110 130 Q110 138 118 140" stroke="#1A1410" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- Whiskers -->
+        <g stroke="#1A1410" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".8">
+          <line x1="68" y1="128" x2="38" y2="122"/>
+          <line x1="68" y1="134" x2="38" y2="136"/>
+          <line x1="68" y1="140" x2="40" y2="148"/>
+          <line x1="152" y1="128" x2="182" y2="122"/>
+          <line x1="152" y1="134" x2="182" y2="136"/>
+          <line x1="152" y1="140" x2="180" y2="148"/>
+        </g>
+
+        <!-- Zzz (sleeping indicator) -->
+        <g class="zzz" opacity="0" id="zzz">
+          <text x="160" y="50" font-family="Fraunces, serif" font-style="italic" font-weight="700" font-size="22" fill="#1A1410">z</text>
+          <text x="172" y="35" font-family="Fraunces, serif" font-style="italic" font-weight="700" font-size="16" fill="#1A1410">z</text>
+          <text x="182" y="22" font-family="Fraunces, serif" font-style="italic" font-weight="700" font-size="12" fill="#1A1410">z</text>
+        </g>
+      </svg>
+
+      <!-- Speech bubble -->
+      <div class="bubble" id="bubble">喵～</div>
+
+      <!-- Polaroid -->
+      <div class="polaroid" id="polaroid">
+        <div class="pic"><img id="photoImg" alt="刚拍的照片" /></div>
+        <div class="cap">FILM #<span id="photoNum">001</span> · 418</div>
+      </div>
+
+      <!-- Flash -->
+      <div class="flash" id="flash"></div>
+    </section>
+  </main>
+
+  <!-- ===== Marquee ===== -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span>网站维护中</span><span>MAINTENANCE IN PROGRESS</span><span>停止访问</span><span>PLEASE COME BACK LATER</span><span>橘猫打盹中</span><span>HTTP 418 I'M A TEAPOT</span><span>网站维护中</span><span>MAINTENANCE IN PROGRESS</span><span>停止访问</span><span>PLEASE COME BACK LATER</span><span>橘猫打盹中</span><span>HTTP 418 I'M A TEAPOT</span>
+    </div>
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <footer class="foot">
+    <div>© 2024 ORANGE CAT CAMERA CO. · ALL RIGHTS RESERVED</div>
+    <div class="countdown">
+      预计恢复 <b id="cdH">00</b>:<b id="cdM">00</b>:<b id="cdS">00</b>
+    </div>
+  </footer>
+</div>
+
+<div class="toast" id="toast">已记录</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ===== State =====
+  var state = {
+    pets: 0,
+    photos: 0,
+    meows: 0,
+    visits: 0,
+    night: false,
+    sleeping: true
+  };
+
+  // ===== Elements =====
+  var $ = function(id){ return document.getElementById(id); };
+  var cat = $("cat");
+  var camera = $("camera");
+  var bubble = $("bubble");
+  var scene = $("scene");
+  var flash = $("flash");
+  var polaroid = $("polaroid");
+  var photoImg = $("photoImg");
+  var photoNum = $("photoNum");
+  var toast = $("toast");
+  var zzz = $("zzz");
+
+  // ===== Audio (Web Audio API, no external files) =====
+  var audioCtx = null;
+  function ac(){
+    if(!audioCtx){
+      try { audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
+      catch(e){ audioCtx = null; }
+    }
+    return audioCtx;
+  }
+  function tone(freq, dur, type, vol, slideTo){
+    var ctx = ac(); if(!ctx) return;
+    var o = ctx.createOscillator();
+    var g = ctx.createGain();
+    o.type = type||"sine";
+    o.frequency.setValueAtTime(freq, ctx.currentTime);
+    if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, ctx.currentTime+dur);
+    g.gain.setValueAtTime(0, ctx.currentTime);
+    g.gain.linearRampToValueAtTime(vol||0.15, ctx.currentTime+0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+dur);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(); o.stop(ctx.currentTime+dur);
+  }
+  function meowSound(){
+    var ctx = ac(); if(!ctx) return;
+    tone(440, 0.18, "sawtooth", 0.08, 720);
+    setTimeout(function(){ tone(620, 0.22, "sawtooth", 0.07, 480); }, 80);
+  }
+  function purrSound(){
+    var ctx = ac(); if(!ctx) return;
+    var o = ctx.createOscillator();
+    var g = ctx.createGain();
+    o.type = "triangle";
+    o.frequency.setValueAtTime(80, ctx.currentTime);
+    // tremolo for purr
+    var lfo = ctx.createOscillator();
+    var lfoG = ctx.createGain();
+    lfo.frequency.value = 25;
+    lfoG.gain.value = 0.04;
+    lfo.connect(lfoG); lfoG.connect(g.gain);
+    g.gain.setValueAtTime(0.06, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.8);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(); lfo.start();
+    o.stop(ctx.currentTime+0.8); lfo.stop(ctx.currentTime+0.8);
+  }
+  function shutterSound(){
+    var ctx = ac(); if(!ctx) return;
+    // click-clack
+    tone(1200, 0.02, "square", 0.1);
+    setTimeout(function(){ tone(800, 0.03, "square", 0.08); }, 30);
+    setTimeout(function(){ tone(400, 0.05, "sawtooth", 0.05); }, 80);
+  }
+
+  // ===== Toast =====
+  var toastTimer = null;
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove("show"); }, 1800);
+  }
+
+  // ===== Bubble =====
+  var bubbleTimer = null;
+  function say(text){
+    bubble.textContent = text;
+    bubble.classList.add("show");
+    clearTimeout(bubbleTimer);
+    bubbleTimer = setTimeout(function(){ bubble.classList.remove("show"); }, 2200);
+  }
+
+  // ===== Meows =====
+  var meows = [
+    "喵～","喵呜…","咕噜咕噜…","别拍了啦","再摸摸我","困死了…",
+    "我也要加班？","胶卷用完了","喵！（伸懒腰）","店员已就位",
+    "请勿打扰","zZz…","今天不营业","418 也是猫","摸到 Belly 了！"
+  ];
+  function randomMeow(){ return meows[Math.floor(Math.random()*meows.length)]; }
+
+  // ===== Stars (night mode) =====
+  function makeStars(){
+    var stars = $("stars");
+    stars.innerHTML = "";
+    for(var i=0;i<40;i++){
+      var s = document.createElement("div");
+      s.className = "star";
+      var sz = Math.random()*2+1;
+      s.style.width = sz+"px"; s.style.height = sz+"px";
+      s.style.left = (Math.random()*100)+"%";
+      s.style.top = (Math.random()*70)+"%";
+      s.style.animationDelay = (Math.random()*3)+"s";
+      stars.appendChild(s);
+    }
+  }
+
+  // ===== Theme toggle =====
+  function setTheme(night){
+    state.night = night;
+    document.body.classList.toggle("night", night);
+    $("themeLabel").textContent = night ? "白天" : "夜间";
+    if(night) makeStars();
+  }
+  $("themeToggle").addEventListener("click", function(){
+    setTheme(!state.night);
+    showToast(state.night ? "切换至夜间模式" : "切换至白天模式");
+  });
+
+  // ===== Cat eyes follow cursor =====
+  var pupilL = $("pupilL"), pupilR = $("pupilR");
+  function moveEyes(e){
+    var rect = cat.getBoundingClientRect();
+    var cx = rect.left + rect.width/2;
+    var cy = rect.top + rect.height*0.45;
+    var dx = (e.clientX - cx) / rect.width;
+    var dy = (e.clientY - cy) / rect.height;
+    var max = 4;
+    var tx = Math.max(-1, Math.min(1, dx)) * max;
+    var ty = Math.max(-1, Math.min(1, dy)) * max;
+    pupilL.setAttribute("transform", "translate("+tx+","+ty+")");
+    pupilR.setAttribute("transform", "translate("+tx+","+ty+")");
+  }
+  document.addEventListener("mousemove", moveEyes);
+  document.addEventListener("touchmove", function(e){
+    if(e.touches[0]) moveEyes(e.touches[0]);
+  }, {passive:true});
+
+  // ===== Blink =====
+  function blink(){
+    cat.classList.add("blinking");
+    setTimeout(function(){ cat.classList.remove("blinking"); }, 150);
+  }
+  function scheduleBlink(){
+    var next = 2000 + Math.random()*4000;
+    setTimeout(function(){
+      if(!state.sleeping || Math.random() > 0.4) blink();
+      scheduleBlink();
+    }, next);
+  }
+  scheduleBlink();
+
+  // ===== Wake / sleep =====
+  function setSleeping(s){
+    state.sleeping = s;
+    zzz.style.opacity = s ? "1" : "0";
+    zzz.style.transition = "opacity .4s ease";
+  }
+
+  // ===== Hearts =====
+  function spawnHeart(x, y){
+    var h = document.createElement("div");
+    h.className = "heart";
+    h.innerHTML = '<svg viewBox="0 0 24 24" fill="#E8632A" stroke="#1A1410" stroke-width="1.5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
+    h.style.left = (x-9)+"px";
+    h.style.top = (y-9)+"px";
+    h.style.setProperty("--dx", (Math.random()*60-30)+"px");
+    document.body.appendChild(h);
+    setTimeout(function(){ h.remove(); }, 1500);
+  }
+
+  // ===== Pet the cat =====
+  function petCat(originEvent){
+    state.pets++;
+    $("petCount").textContent = state.pets;
+    state.visits++;
+    updateStats();
+    cat.classList.add("bounce","excited");
+    setTimeout(function(){ cat.classList.remove("bounce"); }, 500);
+    setTimeout(function(){ cat.classList.remove("excited"); }, 2000);
+
+    setSleeping(false);
+    purrSound();
+
+    // hearts at pointer location relative to cat
+    var rect = cat.getBoundingClientRect();
+    var cx, cy;
+    if(originEvent && originEvent.clientX){
+      cx = originEvent.clientX;
+      cy = originEvent.clientY;
+    } else {
+      cx = rect.left + rect.width/2;
+      cy = rect.top + rect.height*0.4;
+    }
+    for(var i=0;i<3;i++){
+      (function(i){ setTimeout(function(){ spawnHeart(cx, cy); }, i*120); })(i);
+    }
+
+    // reactions
+    if(state.pets === 1) say("咕噜咕噜…");
+    else if(state.pets === 5) say("再来！再来！");
+    else if(state.pets === 10) say("你已经摸了10下了…");
+    else if(state.pets === 20) say("店员要秃了 😿");
+    else if(state.pets % 15 === 0) say("你不上班吗？");
+    else say(randomMeow());
+
+    // resume sleep after a while
+    clearTimeout(petCat._sleepTimer);
+    petCat._sleepTimer = setTimeout(function(){ setSleeping(true); }, 8000);
+  }
+  cat.addEventListener("click", function(e){ e.stopPropagation(); petCat(e); });
+  $("petBtn").addEventListener("click", function(){ petCat(); });
+
+  // ===== Meow =====
+  function meow(){
+    state.meows++;
+    updateStats();
+    meowSound();
+    setSleeping(false);
+    say(randomMeow());
+    clearTimeout(meow._sleepTimer);
+    meow._sleepTimer = setTimeout(function(){ setSleeping(true); }, 6000);
+  }
+  $("meowBtn").addEventListener("click", meow);
+
+  // ===== Shutter / take photo =====
+  function takePhoto(){
+    state.photos++;
+    updateStats();
+
+    shutterSound();
+    flash.classList.remove("fire");
+    void flash.offsetWidth; // reflow
+    flash.classList.add("fire");
+
+    // generate a polaroid "photo" — a snapshot of the scene via SVG
+    setTimeout(function(){
+      photoNum.textContent = String(state.photos).padStart(3,"0");
+      // Build a tiny SVG portrait of cat as the "photo"
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">'+
+        '<rect width="200" height="200" fill="#'+(state.night?"2A2845":"F2D9A8")+'"/>'+
+        '<circle cx="100" cy="60" r="22" fill="#F8B05C" stroke="#1A1410" stroke-width="2"/>'+
+        '<path d="M82 50 L78 30 L94 46 Z" fill="#F8B05C" stroke="#1A1410" stroke-width="2"/>'+
+        '<path d="M118 50 L122 30 L106 46 Z" fill="#F8B05C" stroke="#1A1410" stroke-width="2"/>'+
+        '<ellipse cx="100" cy="150" rx="45" ry="35" fill="#F8B05C" stroke="#1A1410" stroke-width="2"/>'+
+        '<ellipse cx="100" cy="160" rx="22" ry="20" fill="#FBE6C9"/>'+
+        '<circle cx="88" cy="58" r="3" fill="#1A1410"/>'+
+        '<circle cx="112" cy="58" r="3" fill="#1A1410"/>'+
+        '<path d="M95 70 L105 70 L100 76 Z" fill="#B8421A"/>'+
+        '<text x="100" y="195" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#1A1410">418 · ORANGECAT</text>'+
+        '</svg>';
+      photoImg.src = "data:image/svg+xml,"+encodeURIComponent(svg);
+      polaroid.classList.add("show");
+      setTimeout(function(){ polaroid.classList.remove("show"); }, 3500);
+    }, 200);
+
+    say("咔嚓！📸");
+    showToast("已拍摄 · FILM #"+String(state.photos).padStart(3,"0"));
+  }
+  $("shutterBtn").addEventListener("click", takePhoto);
+  camera.addEventListener("click", function(e){ e.stopPropagation(); takePhoto(); });
+
+  // ===== Stats =====
+  function updateStats(){
+    $("statVisits").textContent = state.visits;
+    $("statPhotos").textContent = state.photos;
+    $("statMeows").textContent = state.meows;
+  }
+
+  // ===== Countdown (random 0-3h for vibes) =====
+  var target = Date.now() + (2*60*60 + 18*60 + 1000)*1000; // 2h 18m 1s
+  function tick(){
+    var diff = Math.max(0, target - Date.now());
+    var h = Math.floor(diff/3600000);
+    var m = Math.floor((diff%3600000)/60000);
+    var s = Math.floor((diff%60000)/1000);
+    $("cdH").textContent = String(h).padStart(2,"0");
+    $("cdM").textContent = String(m).padStart(2,"0");
+    $("cdS").textContent = String(s).padStart(2,"0");
+  }
+  setInterval(tick, 1000); tick();
+
+  // ===== Keyboard shortcuts =====
+  document.addEventListener("keydown", function(e){
+    if(e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+    var k = e.key.toLowerCase();
+    if(k === "p"){ petCat(); }
+    else if(k === "m"){ meow(); }
+    else if(k === "c"){ takePhoto(); }
+    else if(k === "t"){ setTheme(!state.night); showToast(state.night?"切换至夜间模式":"切换至白天模式"); }
+  });
+
+  // ===== First visit: increment visits, greet =====
+  state.visits = 1;
+  updateStats();
+  setTimeout(function(){
+    say("zZz… 喵？");
+    setTimeout(function(){ bubble.classList.remove("show"); }, 2400);
+  }, 1200);
+
+  // ===== Idle wake/sleep cycle =====
+  setInterval(function(){
+    if(state.sleeping && Math.random() > 0.7){
+      blink();
+    }
+  }, 5000);
+
+  // ===== Touch: also wake cat =====
+  scene.addEventListener("touchstart", function(){
+    if(state.sleeping) setSleeping(false);
+  }, {passive:true});
+
+  // Pre-init audio on first interaction
+  function initAudioOnce(){
+    ac();
+    document.removeEventListener("click", initAudioOnce);
+    document.removeEventListener("touchstart", initAudioOnce);
+    document.removeEventListener("keydown", initAudioOnce);
+  }
+  document.addEventListener("click", initAudioOnce);
+  document.addEventListener("touchstart", initAudioOnce);
+  document.addEventListener("keydown", initAudioOnce);
+
+  // Hide bubble if clicked outside
+  document.addEventListener("click", function(e){
+    if(!cat.contains(e.target) && e.target.id !== "petBtn" && e.target.id !== "meowBtn"){
+      // keep bubble logic tied to actions; do nothing here
+    }
+  });
+})();
+</script>
+</body>
+</html>
