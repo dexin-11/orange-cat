@@ -236,14 +236,14 @@
     transition:border-color .6s ease;
   }
 
-  /* subtle texture — only a faint halftone, no chaos */
+  /* subtle texture — faint halftone over the photo for print feel */
   .frame .halftone{
-    position:absolute;inset:0;pointer-events:none;opacity:.5;
+    position:absolute;inset:0;pointer-events:none;opacity:.18;
     background-image:radial-gradient(var(--ink-faint) 0.5px,transparent 0.6px);
     background-size:5px 5px;
-    mix-blend-mode:multiply;
+    mix-blend-mode:multiply;z-index:2;
   }
-  body.night .frame .halftone{opacity:.18;mix-blend-mode:screen}
+  body.night .frame .halftone{opacity:.1;mix-blend-mode:screen}
 
   /* print caption strip at bottom of frame */
   .frame .caption{
@@ -251,12 +251,13 @@
     padding:10px 14px;
     display:flex;justify-content:space-between;align-items:baseline;gap:12px;
     font-family:"Space Mono",monospace;font-size:9px;letter-spacing:.16em;
-    text-transform:uppercase;color:var(--ink-soft);
-    border-top:1px solid var(--rule);
-    background:linear-gradient(180deg,transparent,var(--paper-deep) 60%);
+    text-transform:uppercase;color:var(--cream);
+    background:linear-gradient(180deg,transparent,rgba(26,20,16,.78) 70%);
+    z-index:3;
   }
-  .frame .caption b{color:var(--sienna-deep);font-weight:700;letter-spacing:.18em}
-  body.night .frame .caption b{color:var(--sienna)}
+  body.night .frame .caption{color:var(--paper);background:linear-gradient(180deg,transparent,rgba(15,11,8,.82) 70%)}
+  .frame .caption b{color:#F4B73C;font-weight:700;letter-spacing:.18em}
+  body.night .frame .caption b{color:#FFB07A}
 
   /* small aperture mark top-right inside frame */
   .aperture{
@@ -268,46 +269,19 @@
   .aperture circle{fill:none;stroke:var(--ink-soft);stroke-width:1}
   .aperture line{stroke:var(--ink-soft);stroke-width:1}
 
-  /* ===== Cat (centered portrait) ===== */
-  .cat-wrap{
-    position:absolute;left:50%;top:50%;
-    transform:translate(-50%,-50%);
-    width:62%;max-width:280px;
+  /* ===== Cat photo (fills frame, crossfade swap) ===== */
+  .cat-img{
+    position:absolute;inset:0;width:100%;height:100%;
+    object-fit:cover;
+    z-index:1;
+    opacity:0;
+    transition:opacity 1s ease, transform .5s cubic-bezier(.34,1.56,.64,1);
     cursor:pointer;
+    background:var(--paper-deep);
   }
-  .cat{
-    width:100%;height:auto;display:block;
-    filter:drop-shadow(0 6px 10px rgba(0,0,0,.12));
-    animation:catBreathe 4.5s ease-in-out infinite;
-  }
-  body.night .cat{filter:drop-shadow(0 6px 12px rgba(0,0,0,.4))}
-  @keyframes catBreathe{
-    0%,100%{transform:translateY(0) scale(1)}
-    50%{transform:translateY(-3px) scale(1.012)}
-  }
-  .cat.bounce{animation:catBounce .55s cubic-bezier(.34,1.56,.64,1)}
-  @keyframes catBounce{
-    0%{transform:translateY(0) rotate(0)}
-    40%{transform:translateY(-20px) rotate(-6deg) scale(1.05)}
-    70%{transform:translateY(-5px) rotate(2deg)}
-    100%{transform:translateY(0) rotate(0)}
-  }
-  .cat .tail{
-    transform-origin:90% 80%;
-    animation:tailWag 3.4s ease-in-out infinite;
-  }
-  .cat.excited .tail{animation-duration:.7s}
-  @keyframes tailWag{
-    0%,100%{transform:rotate(-5deg)}
-    50%{transform:rotate(12deg)}
-  }
-  .cat .pupil{transition:transform .15s ease-out}
-  .cat .lid{transform-origin:center;transform:scaleY(0);transition:transform .12s ease}
-  .cat.blinking .lid{transform:scaleY(1)}
-
-  /* zzz (sleeping) */
-  .cat .zzz{opacity:0;transition:opacity .4s ease}
-  .cat.sleeping .zzz{opacity:.7}
+  .cat-img.loaded{opacity:1}
+  .cat-img.bouncing{transform:scale(1.04)}
+  .cat-img:hover{transform:scale(1.02)}
 
   /* Speech bubble — refined, no chunky shadow */
   .bubble{
@@ -475,7 +449,7 @@
       <p class="subtitle">暗房冲洗中 <span class="am">·</span> Darkroom in session</p>
 
       <p class="body-copy">
-        橘猫店员正在<em>底片显影</em>，相机店暂时打烊。
+        橘猫店员正在<em>整理底片</em>，相机店暂时打烊。
         网站进入 <em>418</em> 维护态，请稍后再访 ——
         也可以摸摸猫，或按一下快门留个纪念。
       </p>
@@ -515,112 +489,8 @@
         <line x1="17" y1="12" x2="22" y2="12"/>
       </svg>
 
-      <div class="cat-wrap" id="catWrap">
-        <svg class="cat sleeping" id="cat" viewBox="0 0 220 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="橘猫店员">
-          <defs>
-            <radialGradient id="fur" cx="0.5" cy="0.35">
-              <stop offset="0" stop-color="#F8B76A"/><stop offset="0.7" stop-color="#EE9A4A"/><stop offset="1" stop-color="#D97A28"/>
-            </radialGradient>
-            <linearGradient id="bellyG" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#FDF0D8"/><stop offset="1" stop-color="#F4D9A8"/>
-            </linearGradient>
-            <radialGradient id="cheekG" cx="0.5" cy="0.5">
-              <stop offset="0" stop-color="#F0A890" stop-opacity="0.75"/>
-              <stop offset="1" stop-color="#F0A890" stop-opacity="0"/>
-            </radialGradient>
-          </defs>
-
-          <!-- Tail (smoother S-curve) -->
-          <g class="tail">
-            <path d="M166 176 Q208 160 200 115 Q195 90 175 94 Q166 102 174 116 Q180 136 158 156 Z"
-                  fill="url(#fur)" stroke="#1A1410" stroke-width="2.5" stroke-linejoin="round"/>
-            <path d="M193 115 Q198 105 188 105" stroke="#B8421A" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".5"/>
-            <path d="M198 135 Q203 130 193 128" stroke="#B8421A" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".5"/>
-            <path d="M185 155 Q192 150 180 148" stroke="#B8421A" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".5"/>
-          </g>
-
-          <!-- Body (rounder) -->
-          <ellipse cx="110" cy="180" rx="66" ry="50" fill="url(#fur)" stroke="#1A1410" stroke-width="2.5"/>
-          <ellipse cx="110" cy="192" rx="36" ry="32" fill="url(#bellyG)"/>
-
-          <!-- Front paws (rounder, with toe beans) -->
-          <ellipse cx="84" cy="222" rx="14" ry="10" fill="#F8B76A" stroke="#1A1410" stroke-width="2.5"/>
-          <ellipse cx="136" cy="222" rx="14" ry="10" fill="#F8B76A" stroke="#1A1410" stroke-width="2.5"/>
-          <circle cx="80" cy="223" r="2" fill="#D88090"/>
-          <circle cx="85" cy="223" r="2" fill="#D88090"/>
-          <circle cx="90" cy="223" r="2" fill="#D88090"/>
-          <circle cx="130" cy="223" r="2" fill="#D88090"/>
-          <circle cx="135" cy="223" r="2" fill="#D88090"/>
-          <circle cx="140" cy="223" r="2" fill="#D88090"/>
-
-          <!-- body stripes (very subtle) -->
-          <path d="M58 175 Q63 168 52 165" stroke="#B8421A" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".45"/>
-          <path d="M162 175 Q157 168 168 165" stroke="#B8421A" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".45"/>
-          <path d="M70 195 Q66 188 76 186" stroke="#B8421A" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".4"/>
-          <path d="M150 195 Q154 188 144 186" stroke="#B8421A" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".4"/>
-
-          <!-- Head (rounder, bigger) -->
-          <circle cx="110" cy="100" r="58" fill="url(#fur)" stroke="#1A1410" stroke-width="2.5"/>
-
-          <!-- Ears (rounded soft tips, not sharp triangles) -->
-          <path d="M62 78 Q44 42 58 38 Q80 36 96 64 Z" fill="url(#fur)" stroke="#1A1410" stroke-width="2.5" stroke-linejoin="round"/>
-          <path d="M158 78 Q176 42 162 38 Q140 36 124 64 Z" fill="url(#fur)" stroke="#1A1410" stroke-width="2.5" stroke-linejoin="round"/>
-          <path d="M66 70 Q56 50 66 46 Q80 46 88 62 Z" fill="#F0A890" opacity=".85"/>
-          <path d="M154 70 Q164 50 154 46 Q140 46 132 62 Z" fill="#F0A890" opacity=".85"/>
-
-          <!-- Forehead M stripes (soft) -->
-          <path d="M90 64 Q94 78 102 70 Q108 76 110 68 Q112 76 118 70 Q126 78 130 64"
-                stroke="#B8421A" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>
-          <path d="M82 72 Q84 82 88 78" stroke="#B8421A" stroke-width="2" fill="none" stroke-linecap="round" opacity=".45"/>
-          <path d="M138 72 Q136 82 132 78" stroke="#B8421A" stroke-width="2" fill="none" stroke-linecap="round" opacity=".45"/>
-
-          <!-- Cheek blush (cute) -->
-          <ellipse cx="74" cy="116" rx="13" ry="8" fill="url(#cheekG)"/>
-          <ellipse cx="146" cy="116" rx="13" ry="8" fill="url(#cheekG)"/>
-
-          <!-- Cheek stripes (minimal) -->
-          <path d="M56 106 Q50 109 53 114" stroke="#B8421A" stroke-width="2" fill="none" stroke-linecap="round" opacity=".45"/>
-          <path d="M164 106 Q170 109 167 114" stroke="#B8421A" stroke-width="2" fill="none" stroke-linecap="round" opacity=".45"/>
-
-          <!-- Eyes (bigger, rounder, double sparkle) -->
-          <ellipse cx="86" cy="98" rx="13" ry="15" fill="#FFF" stroke="#1A1410" stroke-width="2.2"/>
-          <ellipse cx="134" cy="98" rx="13" ry="15" fill="#FFF" stroke="#1A1410" stroke-width="2.2"/>
-          <g class="pupil" id="pupilL">
-            <ellipse cx="86" cy="99" rx="6" ry="11" fill="#1A1410"/>
-            <circle cx="89" cy="94" r="2.5" fill="#fff"/>
-            <circle cx="83" cy="103" r="1.4" fill="#fff" opacity=".8"/>
-          </g>
-          <g class="pupil" id="pupilR">
-            <ellipse cx="134" cy="99" rx="6" ry="11" fill="#1A1410"/>
-            <circle cx="137" cy="94" r="2.5" fill="#fff"/>
-            <circle cx="131" cy="103" r="1.4" fill="#fff" opacity=".8"/>
-          </g>
-          <ellipse class="lid" id="lidL" cx="86" cy="98" rx="14" ry="16" fill="url(#fur)"/>
-          <ellipse class="lid" id="lidR" cx="134" cy="98" rx="14" ry="16" fill="url(#fur)"/>
-
-          <!-- Nose (small, pink) -->
-          <path d="M104 120 L116 120 Q114 127 110 129 Q106 127 104 120 Z" fill="#D88090" stroke="#1A1410" stroke-width="1.5" stroke-linejoin="round"/>
-          <!-- Mouth (cute w shape) -->
-          <path d="M110 129 L110 134" stroke="#1A1410" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-          <path d="M110 134 Q104 139 99 135" stroke="#1A1410" stroke-width="2" fill="none" stroke-linecap="round"/>
-          <path d="M110 134 Q116 139 121 135" stroke="#1A1410" stroke-width="2" fill="none" stroke-linecap="round"/>
-
-          <!-- Whiskers (thin, delicate) -->
-          <g stroke="#1A1410" stroke-width="1.1" stroke-linecap="round" fill="none" opacity=".5">
-            <line x1="68" y1="124" x2="40" y2="120"/>
-            <line x1="68" y1="131" x2="40" y2="134"/>
-            <line x1="152" y1="124" x2="180" y2="120"/>
-            <line x1="152" y1="131" x2="180" y2="134"/>
-          </g>
-
-          <!-- zzz -->
-          <g class="zzz" id="zzz">
-            <text x="160" y="50" font-family="Fraunces, serif" font-style="italic" font-weight="600" font-size="20" fill="#1A1410">z</text>
-            <text x="172" y="36" font-family="Fraunces, serif" font-style="italic" font-weight="600" font-size="15" fill="#1A1410">z</text>
-            <text x="182" y="24" font-family="Fraunces, serif" font-style="italic" font-weight="600" font-size="11" fill="#1A1410">z</text>
-          </g>
-        </svg>
-      </div>
+      <img class="cat-img" id="catImgA" alt="橘猫店员" />
+      <img class="cat-img" id="catImgB" alt="橘猫店员" />
 
       <!-- Speech bubble -->
       <div class="bubble" id="bubble">喵～</div>
@@ -649,7 +519,7 @@
       <span>No ETA</span>
       <span>Maintained by Cat</span>
     </div>
-    <div class="sig">— 店员橘猫，打盹中</div>
+    <div class="sig">— 店员橘猫，值班中</div>
   </footer>
 </div>
 
@@ -665,13 +535,18 @@
     photos: 0,
     meows: 0,
     visits: 0,
-    night: false,
-    sleeping: true
+    night: false
   };
 
+  // ===== Cat image API =====
+  var CAT_API = "https://img.hdx.dpdns.org/random";
+  function catUrl(){
+    return CAT_API + "?r=" + Math.random().toString(36).slice(2);
+  }
+
   var $ = function(id){ return document.getElementById(id); };
-  var cat = $("cat");
-  var catWrap = $("catWrap");
+  var catA = $("catImgA"), catB = $("catImgB");
+  var active = catA;            // currently visible cat image
   var bubble = $("bubble");
   var flash = $("flash");
   var polaroid = $("polaroid");
@@ -750,9 +625,9 @@
 
   // ===== Meows =====
   var meows = [
-    "喵～","喵呜…","咕噜咕噜…","别拍了啦","再摸摸我","困死了…",
+    "喵～","喵呜…","咕噜咕噜…","别拍了啦","再摸摸我",
     "我也要加班？","胶卷用完了","喵！","店员已就位",
-    "请勿打扰","zZz…","今天不营业","418 也是猫","摸到 belly 了！"
+    "请勿打扰","今天不营业","418 也是猫","摸到 belly 了！"
   ];
   function randomMeow(){ return meows[Math.floor(Math.random()*meows.length)]; }
 
@@ -768,44 +643,35 @@
     showToast(state.night ? "切换至夜间模式" : "切换至白天模式");
   });
 
-  // ===== Cat eyes follow cursor =====
-  var pupilL = $("pupilL"), pupilR = $("pupilR");
-  function moveEyes(e){
-    var rect = cat.getBoundingClientRect();
-    var cx = rect.left + rect.width/2;
-    var cy = rect.top + rect.height*0.45;
-    var dx = (e.clientX - cx) / rect.width;
-    var dy = (e.clientY - cy) / rect.height;
-    var max = 3.5;
-    var tx = Math.max(-1, Math.min(1, dx)) * max;
-    var ty = Math.max(-1, Math.min(1, dy)) * max;
-    pupilL.setAttribute("transform", "translate("+tx+","+ty+")");
-    pupilR.setAttribute("transform", "translate("+tx+","+ty+")");
+  // ===== Cat image rotation (crossfade every ~7s) =====
+  var rotateTimer = null;
+  function loadCat(){
+    var inactive = active === catA ? catB : catA;
+    inactive.onload = function(){
+      inactive.classList.add("loaded");
+      // fade out the previously visible one shortly after the new one is in
+      var prev = active;
+      setTimeout(function(){ prev.classList.remove("loaded"); }, 80);
+      active = inactive;
+      inactive.onload = null;
+      inactive.onerror = null;
+    };
+    inactive.onerror = function(){ inactive.onload = null; inactive.onerror = null; };
+    inactive.src = catUrl();
   }
-  document.addEventListener("mousemove", moveEyes);
-  document.addEventListener("touchmove", function(e){
-    if(e.touches[0]) moveEyes(e.touches[0]);
-  }, {passive:true});
-
-  // ===== Blink =====
-  function blink(){
-    cat.classList.add("blinking");
-    setTimeout(function(){ cat.classList.remove("blinking"); }, 150);
-  }
-  function scheduleBlink(){
-    var next = 2200 + Math.random()*4200;
-    setTimeout(function(){
-      if(!state.sleeping || Math.random() > 0.4) blink();
-      scheduleBlink();
-    }, next);
-  }
-  scheduleBlink();
-
-  // ===== Wake / sleep =====
-  function setSleeping(s){
-    state.sleeping = s;
-    cat.classList.toggle("sleeping", s);
-  }
+  // initial load
+  loadCat();
+  // rotate every 7 seconds
+  rotateTimer = setInterval(loadCat, 7000);
+  // pause rotation when tab hidden, resume when visible
+  document.addEventListener("visibilitychange", function(){
+    if(document.hidden){
+      clearInterval(rotateTimer); rotateTimer = null;
+    } else if(!rotateTimer){
+      loadCat();
+      rotateTimer = setInterval(loadCat, 7000);
+    }
+  });
 
   // ===== Hearts =====
   function spawnHeart(x, y){
@@ -825,14 +691,12 @@
     $("petCount").textContent = state.pets;
     state.visits++;
     updateStats();
-    cat.classList.add("bounce","excited");
-    setTimeout(function(){ cat.classList.remove("bounce"); }, 550);
-    setTimeout(function(){ cat.classList.remove("excited"); }, 2000);
-
-    setSleeping(false);
+    // bounce the currently visible image
+    active.classList.add("bouncing");
+    setTimeout(function(){ active.classList.remove("bouncing"); }, 500);
     purrSound();
 
-    var rect = cat.getBoundingClientRect();
+    var rect = active.getBoundingClientRect();
     var cx, cy;
     if(originEvent && originEvent.clientX){
       cx = originEvent.clientX;
@@ -851,11 +715,10 @@
     else if(state.pets === 20) say("店员要秃了 😿");
     else if(state.pets % 15 === 0) say("你不上班吗？");
     else say(randomMeow());
-
-    clearTimeout(petCat._sleepTimer);
-    petCat._sleepTimer = setTimeout(function(){ setSleeping(true); }, 8000);
   }
-  catWrap.addEventListener("click", function(e){ e.stopPropagation(); petCat(e); });
+  [catA, catB].forEach(function(el){
+    el.addEventListener("click", function(e){ e.stopPropagation(); petCat(e); });
+  });
   $("petBtn").addEventListener("click", function(){ petCat(); });
 
   // ===== Meow =====
@@ -863,10 +726,7 @@
     state.meows++;
     updateStats();
     meowSound();
-    setSleeping(false);
     say(randomMeow());
-    clearTimeout(meow._sleepTimer);
-    meow._sleepTimer = setTimeout(function(){ setSleeping(true); }, 6000);
   }
   $("meowBtn").addEventListener("click", meow);
 
@@ -880,70 +740,20 @@
     void flash.offsetWidth;
     flash.classList.add("fire");
 
-    setTimeout(function(){
-      photoNum.textContent = String(state.photos).padStart(3,"0");
-      var bg = state.night ? "#3A3858" : "#FFE8B8";
-      var bg2 = state.night ? "#2A2848" : "#F4C988";
-      var glow = state.night ? "#E8E4C9" : "#FFF4D8";
-      var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">'+
-        '<defs>'+
-        '<linearGradient id="bgP" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+bg+'"/><stop offset="1" stop-color="'+bg2+'"/></linearGradient>'+
-        '<radialGradient id="furP" cx="0.5" cy="0.35"><stop offset="0" stop-color="#F8B76A"/><stop offset="1" stop-color="#D97A28"/></radialGradient>'+
-        '<radialGradient id="cheekP" cx="0.5" cy="0.5"><stop offset="0" stop-color="#F0A890" stop-opacity="0.8"/><stop offset="1" stop-color="#F0A890" stop-opacity="0"/></radialGradient>'+
-        '</defs>'+
-        '<rect width="200" height="200" fill="url(#bgP)"/>'+
-        '<circle cx="160" cy="40" r="22" fill="'+glow+'" opacity="0.55"/>'+
-        // body
-        '<ellipse cx="100" cy="165" rx="52" ry="38" fill="url(#furP)" stroke="#1A1410" stroke-width="2"/>'+
-        '<ellipse cx="100" cy="172" rx="26" ry="22" fill="#FDF0D8"/>'+
-        // head
-        '<circle cx="100" cy="92" r="46" fill="url(#furP)" stroke="#1A1410" stroke-width="2"/>'+
-        // ears (rounded)
-        '<path d="M64 72 Q48 40 60 36 Q80 34 92 60 Z" fill="url(#furP)" stroke="#1A1410" stroke-width="2" stroke-linejoin="round"/>'+
-        '<path d="M136 72 Q152 40 140 36 Q120 34 108 60 Z" fill="url(#furP)" stroke="#1A1410" stroke-width="2" stroke-linejoin="round"/>'+
-        '<path d="M68 66 Q60 50 68 46 Q80 46 86 60 Z" fill="#F0A890" opacity="0.85"/>'+
-        '<path d="M132 66 Q140 50 132 46 Q120 46 114 60 Z" fill="#F0A890" opacity="0.85"/>'+
-        // flower prop on right ear
-        '<g transform="translate(142,36)">'+
-        '<circle cx="-4" cy="-3" r="3.5" fill="#FFE0E8" stroke="#1A1410" stroke-width="1"/>'+
-        '<circle cx="4" cy="-3" r="3.5" fill="#FFE0E8" stroke="#1A1410" stroke-width="1"/>'+
-        '<circle cx="-3" cy="3" r="3.5" fill="#FFE0E8" stroke="#1A1410" stroke-width="1"/>'+
-        '<circle cx="3" cy="3" r="3.5" fill="#FFE0E8" stroke="#1A1410" stroke-width="1"/>'+
-        '<circle r="2.5" fill="#F4B73C" stroke="#1A1410" stroke-width="0.8"/>'+
-        '</g>'+
-        // forehead stripes
-        '<path d="M82 56 Q86 70 94 62 Q100 68 100 60 Q100 68 106 62 Q114 70 118 56" stroke="#B8421A" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>'+
-        // blush
-        '<ellipse cx="72" cy="102" rx="11" ry="7" fill="url(#cheekP)"/>'+
-        '<ellipse cx="128" cy="102" rx="11" ry="7" fill="url(#cheekP)"/>'+
-        // eyes (big, sparkly)
-        '<ellipse cx="82" cy="90" rx="11" ry="13" fill="#FFF" stroke="#1A1410" stroke-width="2"/>'+
-        '<ellipse cx="118" cy="90" rx="11" ry="13" fill="#FFF" stroke="#1A1410" stroke-width="2"/>'+
-        '<ellipse cx="82" cy="91" rx="5" ry="9.5" fill="#1A1410"/>'+
-        '<ellipse cx="118" cy="91" rx="5" ry="9.5" fill="#1A1410"/>'+
-        '<circle cx="85" cy="86" r="2.2" fill="#fff"/>'+
-        '<circle cx="121" cy="86" r="2.2" fill="#fff"/>'+
-        '<circle cx="79" cy="94" r="1.3" fill="#fff" opacity="0.8"/>'+
-        '<circle cx="115" cy="94" r="1.3" fill="#fff" opacity="0.8"/>'+
-        // nose (pink)
-        '<path d="M95 110 L105 110 Q103 117 100 119 Q97 117 95 110 Z" fill="#D88090" stroke="#1A1410" stroke-width="1.5"/>'+
-        // mouth (cute w)
-        '<path d="M100 119 L100 124" stroke="#1A1410" stroke-width="1.5" fill="none" stroke-linecap="round"/>'+
-        '<path d="M100 124 Q95 129 90 125" stroke="#1A1410" stroke-width="1.8" fill="none" stroke-linecap="round"/>'+
-        '<path d="M100 124 Q105 129 110 125" stroke="#1A1410" stroke-width="1.8" fill="none" stroke-linecap="round"/>'+
-        // whiskers
-        '<g stroke="#1A1410" stroke-width="0.9" stroke-linecap="round" opacity="0.5">'+
-        '<line x1="66" y1="114" x2="44" y2="110"/>'+
-        '<line x1="66" y1="120" x2="46" y2="122"/>'+
-        '<line x1="134" y1="114" x2="156" y2="110"/>'+
-        '<line x1="134" y1="120" x2="154" y2="122"/>'+
-        '</g>'+
-        '<text x="100" y="194" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#1A1410" letter-spacing="1">418 · ORANGECAT</text>'+
-        '</svg>';
-      photoImg.src = "data:image/svg+xml,"+encodeURIComponent(svg);
+    // pull a fresh random cat image into the polaroid
+    photoNum.textContent = String(state.photos).padStart(3,"0");
+    var loader = new Image();
+    loader.onload = function(){
+      photoImg.src = loader.src;
       polaroid.classList.add("show");
       setTimeout(function(){ polaroid.classList.remove("show"); }, 3500);
-    }, 200);
+    };
+    loader.onerror = function(){
+      // still show polaroid even if image fails
+      polaroid.classList.add("show");
+      setTimeout(function(){ polaroid.classList.remove("show"); }, 3500);
+    };
+    loader.src = catUrl();
 
     say("咔嚓！📸");
     showToast("已拍摄 · FILM #"+String(state.photos).padStart(3,"0"));
@@ -971,16 +781,9 @@
   state.visits = 1;
   updateStats();
   setTimeout(function(){
-    say("zZz… 喵？");
+    say("喵～ 欢迎光临");
     setTimeout(function(){ bubble.classList.remove("show"); }, 2400);
   }, 1400);
-
-  // ===== Idle blinks =====
-  setInterval(function(){
-    if(state.sleeping && Math.random() > 0.7){
-      blink();
-    }
-  }, 5000);
 
   // Pre-init audio on first interaction
   function initAudioOnce(){
