@@ -838,12 +838,15 @@
   var currentPhotoUrl = null; // last printed photo URL, for save
   var scrollTimer = null;
   function takePhoto(){
-    // retract any currently-printed photo first + reset developed state
+    // clear pending timers
     if(photoHideTimer){ clearTimeout(photoHideTimer); photoHideTimer = null; }
     if(photoDevelopTimer){ clearTimeout(photoDevelopTimer); photoDevelopTimer = null; }
     if(scrollTimer){ clearInterval(scrollTimer); scrollTimer = null; }
-    photoOut.classList.remove("printing");
-    photoOut.classList.remove("developed");
+
+    // capture the image currently shown in the lens
+    var lensUrl = active.src;
+    currentPhotoUrl = lensUrl;
+    photoImg.src = lensUrl;
 
     state.photos++;
     updateStats();
@@ -854,44 +857,44 @@
     void flash.offsetWidth;
     flash.classList.add("fire");
 
-    // pull a fresh random cat image (consume prefetch pool → instant)
-    var consumed = next;
-    next = prefetchCat();
-    consumed.then(function(fullUrl){
-      currentPhotoUrl = fullUrl;
-      if(fullUrl) photoImg.src = fullUrl; // already preloaded
-      // small delay so flash precedes the print emerging
-      setTimeout(function(){
-        photoOut.classList.add("printing");
-        showToast("已拍摄 · FILM #"+String(state.photos).padStart(3,"0"));
-        // sync-scroll: keep the emerging photo in view as it slides out
-        var target = photoOut;
-        var start = window.pageYOffset;
-        var rect = target.getBoundingClientRect();
-        // how far to scroll so the photo bottom is comfortably in view
-        var viewportH = window.innerHeight;
-        var desired = start + rect.bottom - viewportH + 60;
-        if(desired > start){
-          var duration = 1300, t0 = Date.now();
-          scrollTimer = setInterval(function(){
-            var p = Math.min(1, (Date.now()-t0)/duration);
-            var ease = 1 - Math.pow(1-p, 3); // easeOutCubic
-            window.scrollTo(0, start + (desired - start) * ease);
-            if(p >= 1){ clearInterval(scrollTimer); scrollTimer = null; }
-          }, 16);
-        }
-        // lock developed state once the develop animation has played (~6.5s)
-        photoDevelopTimer = setTimeout(function(){
-          photoOut.classList.add("developed");
-          photoDevelopTimer = null;
-        }, 6800);
-        // auto-retract after a while
-        photoHideTimer = setTimeout(function(){
-          photoOut.classList.remove("printing");
-          photoHideTimer = null;
-        }, 14000);
-      }, fullUrl ? 120 : 300);
-    });
+    // reset the photo card to its undeveloped state, force reflow so the
+    // develop animation replays every time (not just the first)
+    photoOut.classList.remove("printing");
+    photoOut.classList.remove("developed");
+    void photoOut.offsetWidth; // reflow
+
+    // small delay so flash precedes the print emerging
+    setTimeout(function(){
+      photoOut.classList.add("printing");
+      showToast("已拍摄 · FILM #"+String(state.photos).padStart(3,"0"));
+
+      // sync-scroll: keep the emerging photo in view as it slides out
+      var start = window.pageYOffset;
+      var rect = photoOut.getBoundingClientRect();
+      var viewportH = window.innerHeight;
+      var desired = start + rect.bottom - viewportH + 60;
+      if(desired > start){
+        var duration = 1300, t0 = Date.now();
+        scrollTimer = setInterval(function(){
+          var p = Math.min(1, (Date.now()-t0)/duration);
+          var ease = 1 - Math.pow(1-p, 3); // easeOutCubic
+          window.scrollTo(0, start + (desired - start) * ease);
+          if(p >= 1){ clearInterval(scrollTimer); scrollTimer = null; }
+        }, 16);
+      }
+
+      // lock developed state once the develop animation has played (~6.8s)
+      photoDevelopTimer = setTimeout(function(){
+        photoOut.classList.add("developed");
+        photoDevelopTimer = null;
+      }, 6800);
+
+      // auto-retract after a while → old photo disappears
+      photoHideTimer = setTimeout(function(){
+        photoOut.classList.remove("printing");
+        photoHideTimer = null;
+      }, 14000);
+    }, 200);
 
     say("咔嚓！");
   }
