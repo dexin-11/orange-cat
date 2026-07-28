@@ -697,48 +697,37 @@
   }
   .photo-out.skin-joycam .photo-card .cap{color:#1A1E22;letter-spacing:.2em}
 
-  /* ===== Fullscreen photo mode — frosted backdrop, camera hidden ===== */
-  body.photo-mode .frame{
-    opacity:0;visibility:hidden;
-    transition:opacity .4s ease,visibility .4s ease;
+  /* ===== Film perforations (sprocket holes) on photo border ===== */
+  .perforations{
+    position:absolute;left:7px;right:7px;height:4px;
+    pointer-events:none;z-index:7;
+    background-image:repeating-linear-gradient(90deg,
+      rgba(0,0,0,.22) 0 3px,transparent 3px 9px);
+    background-size:9px 4px;
   }
-  /* marquee + style-bar stay visible but will be frosted by the overlay */
-  body.photo-mode .marquee,body.photo-mode .style-bar{
-    opacity:.5;transition:opacity .5s ease;
+  .perforations.top{top:3px}
+  .perforations.bottom{bottom:3px}
+  /* skins with a top stripe: push perforations below it */
+  .photo-out.skin-classic .perforations.top,
+  .photo-out.skin-joycam .perforations.top{top:9px}
+  /* skins with a bottom strip: push perforations above it */
+  .photo-out.skin-limoland .perforations.bottom{bottom:9px}
+  /* dark skins use light marks */
+  .photo-out.skin-noir .perforations{
+    background-image:repeating-linear-gradient(90deg,
+      rgba(255,255,255,.18) 0 3px,transparent 3px 9px);
+  }
+  .photo-out.skin-joycam .perforations{
+    background-image:repeating-linear-gradient(90deg,
+      rgba(26,30,34,.22) 0 3px,transparent 3px 9px);
   }
 
-  .photo-out.fullscreen{
-    position:fixed;inset:0;z-index:8000;
-    width:100%;max-width:none;margin:0;padding:24px;
-    display:flex;align-items:center;justify-content:center;
-    background:rgba(15,11,8,.55);
-    backdrop-filter:blur(28px) saturate(1.2);
-    -webkit-backdrop-filter:blur(28px) saturate(1.2);
+  /* ===== Film simulation name stamp ===== */
+  .photo-card .film-stamp{
+    font-family:"Space Mono",monospace;font-size:8px;
+    text-align:center;letter-spacing:.2em;text-transform:uppercase;
+    margin-top:3px;opacity:.45;
   }
-  .photo-out.fullscreen .photo-card{
-    max-width:min(92vw,580px);
-    width:100%;max-height:92vh;overflow:hidden;
-    box-shadow:0 30px 80px rgba(0,0,0,.55);
-  }
-  .photo-out.fullscreen .photo-card .pic{
-    max-height:calc(92vh - 110px);
-  }
-  .photo-out.fullscreen .photo-card .cap{font-size:12px}
-
-  /* close button (visible only in fullscreen) */
-  .photo-close{
-    position:fixed;top:20px;right:20px;z-index:8100;
-    width:42px;height:42px;border-radius:50%;
-    border:1px solid rgba(255,255,255,.35);
-    background:rgba(255,255,255,.12);color:#fff;
-    font-size:20px;line-height:1;cursor:pointer;
-    display:none;align-items:center;justify-content:center;
-    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-    transition:background .25s ease,transform .2s ease;
-    font-family:"Space Mono",monospace;
-  }
-  .photo-close:hover{background:rgba(255,255,255,.22);transform:scale(1.08)}
-  body.photo-mode .photo-close{display:flex}
 
   /* ===== Film grain + vignette overlays (driven by --film-grain / --film-vignette) ===== */
   .film-grain,.film-vignette{
@@ -958,6 +947,7 @@
   <!-- printed photo lives in the document flow, below the camera -->
   <div class="photo-out" id="photoOut">
     <div class="photo-card">
+      <div class="perforations top" aria-hidden="true"></div>
       <div class="pic">
         <img id="photoImg" alt="刚拍的照片" />
         <div class="develop" aria-hidden="true"></div>
@@ -965,14 +955,14 @@
         <div class="film-vignette" aria-hidden="true"></div>
       </div>
       <div class="cap" id="photoCap">FILM #001 · 猫咪照相馆</div>
+      <div class="film-stamp" id="filmStamp"></div>
+      <div class="perforations bottom" aria-hidden="true"></div>
       <button class="save-btn" id="saveBtn" type="button">保存</button>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast">已记录</div>
-
-<button class="photo-close" id="photoClose" type="button" aria-label="关闭照片">×</button>
 
 <script>
 (function(){
@@ -1012,7 +1002,6 @@
   var flashScreen = $("flashScreen");
   var photoOut = $("photoOut");
   var photoImg = $("photoImg");
-  var photoClose = $("photoClose");
   var toast = $("toast");
   var advToggle = $("advToggle");
   var advPanel = $("advPanel");
@@ -1026,6 +1015,7 @@
   var advReset = $("advReset");
   var intensitySlider = $("intensitySlider");
   var intensityValue = $("intensityValue");
+  var filmStamp = $("filmStamp");
 
   // ===== Audio (Web Audio API) =====
   var audioCtx = null;
@@ -1070,6 +1060,7 @@
   var SKIN_NAMES = {classic:"经典彩虹",instax:"永恒银黑",cam96:"炫彩霓虹",noir:"经典全黑",limoland:"艺术联名",joycam:"太空银"};
   var CAM_BRAND = {classic:"猫咪照相馆",instax:"instax",cam96:"96 CAM",noir:"SQ40",limoland:"SOFORT",joycam:"JOYCAM"};
   var PHOTO_BRAND = {classic:"猫咪照相馆",instax:"instax mini 40",cam96:"96 CAM",noir:"SQ40",limoland:"SOFORT",joycam:"JOYCAM"};
+  var FILM_STAMP = {classic:"PROVIA 100",instax:"CLASSIC CHROME",cam96:"NOSTALGIC NEG.",noir:"NEOPAN ACROS",joycam:"CINERENE ETERNA",limoland:"FUJI REALA ACE"};
   // 每种相机皮肤绑定的胶片模拟（参考 grainlab 调参）
   // film: 显示名 / filter: 预览与保存共用的 CSS filter / grain/vignette/fade: 默认值(0-100)
   var FILM = {
@@ -1323,14 +1314,14 @@
   // ===== Shutter / take photo =====
   var photoHideTimer = null;
   var photoDevelopTimer = null;
-  var photoFsTimer = null;
+  var scrollSyncRAF = null;
   var currentPhotoUrl = null;
   var currentPhotoSkin = "classic";
   var currentPhotoFilm = null;
   function takePhoto(){
     if(photoHideTimer){ clearTimeout(photoHideTimer); photoHideTimer = null; }
     if(photoDevelopTimer){ clearTimeout(photoDevelopTimer); photoDevelopTimer = null; }
-    if(photoFsTimer){ clearTimeout(photoFsTimer); photoFsTimer = null; }
+    if(scrollSyncRAF){ cancelAnimationFrame(scrollSyncRAF); scrollSyncRAF = null; }
 
     var lensUrl = active.src;
     currentPhotoUrl = lensUrl;
@@ -1348,6 +1339,7 @@
     SKINS.forEach(function(s){ photoOut.classList.remove("skin-"+s); });
     photoOut.classList.add("skin-"+currentSkin);
     photoCap.innerHTML = "FILM #" + String(state.photos).padStart(3,"0") + " · <span class=\"brand-cn\">" + (PHOTO_BRAND[currentSkin] || "猫咪照相馆") + "</span>";
+    if(filmStamp) filmStamp.textContent = FILM_STAMP[currentSkin] || "";
 
     shutterSound();
     flash.classList.remove("fire");
@@ -1358,8 +1350,7 @@
     flashScreen.classList.add("fire");
 
     // reset to inline emerge state
-    photoOut.classList.remove("printing","developed","fullscreen");
-    document.body.classList.remove("photo-mode");
+    photoOut.classList.remove("printing","developed");
     var card0 = photoOut.querySelector(".photo-card");
     if(card0){ card0.style.transition=""; card0.style.transform=""; card0.style.transformOrigin=""; }
     void photoOut.offsetWidth; // reflow so develop animation replays
@@ -1368,27 +1359,29 @@
       photoOut.classList.add("printing");
       showToast("已拍摄 · FILM #"+String(state.photos).padStart(3,"0"));
 
-      // After the photo has emerged from the slot, expand to fullscreen
-      // with a frosted backdrop and hide the camera. Use FLIP to animate
-      // the photo-card smoothly from its inline position to centered.
-      photoFsTimer = setTimeout(function(){
-        var card = photoOut.querySelector(".photo-card");
-        var firstRect = card.getBoundingClientRect();
-        photoOut.classList.add("fullscreen");
-        document.body.classList.add("photo-mode");
-        window.scrollTo({top:0});
-        var lastRect = card.getBoundingClientRect();
-        var dx = firstRect.left - lastRect.left;
-        var dy = firstRect.top - lastRect.top;
-        var sw = firstRect.width / lastRect.width || 1;
-        card.style.transition = "none";
-        card.style.transform = "translate("+dx+"px,"+dy+"px) scale("+sw+")";
-        card.style.transformOrigin = "top left";
-        void card.offsetWidth; // reflow
-        card.style.transition = "transform .55s cubic-bezier(.22,1,.36,1)";
-        card.style.transform = "";
-        photoFsTimer = null;
-      }, 1600);
+      // Scroll the page down in sync with the photo emerging from the slot.
+      // The photo-card grows from 0 to its full height via a max-height
+      // transition (1.4s, cubic-bezier(.22,1,.36,1)). We scroll by the same
+      // distance with the same easing so the photo stays in view as it prints,
+      // while the camera scrolls up out of sight.
+      var card = photoOut.querySelector(".photo-card");
+      var targetHeight = card.scrollHeight;
+      var startScroll = window.pageYOffset || document.documentElement.scrollTop;
+      var targetScroll = startScroll + targetHeight;
+      var duration = 1400;
+      var startTime = performance.now();
+      function ease(t){ return 1 - Math.pow(1 - t, 3); }
+      function scrollStep(now){
+        var elapsed = now - startTime;
+        var t = Math.min(elapsed / duration, 1);
+        window.scrollTo(0, startScroll + (targetScroll - startScroll) * ease(t));
+        if(t < 1 && photoOut.classList.contains("printing")){
+          scrollSyncRAF = requestAnimationFrame(scrollStep);
+        } else {
+          scrollSyncRAF = null;
+        }
+      }
+      scrollSyncRAF = requestAnimationFrame(scrollStep);
 
       photoDevelopTimer = setTimeout(function(){
         photoOut.classList.add("developed");
@@ -1404,21 +1397,13 @@
   function closePhoto(){
     if(photoHideTimer){ clearTimeout(photoHideTimer); photoHideTimer = null; }
     if(photoDevelopTimer){ clearTimeout(photoDevelopTimer); photoDevelopTimer = null; }
-    if(photoFsTimer){ clearTimeout(photoFsTimer); photoFsTimer = null; }
-    photoOut.classList.remove("fullscreen","printing","developed");
-    document.body.classList.remove("photo-mode");
-    // clear inline FLIP transform so next print starts clean
+    if(scrollSyncRAF){ cancelAnimationFrame(scrollSyncRAF); scrollSyncRAF = null; }
+    photoOut.classList.remove("printing","developed");
+    // clear inline transform so next print starts clean
     var card = photoOut.querySelector(".photo-card");
     if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; }
   }
   $("shutterTop").addEventListener("click", function(e){ e.stopPropagation(); takePhoto(); });
-  // Close button + click on backdrop (not the card) dismisses the photo
-  photoClose.addEventListener("click", function(e){ e.stopPropagation(); closePhoto(); });
-  photoOut.addEventListener("click", function(e){
-    if(photoOut.classList.contains("fullscreen") && e.target === photoOut){
-      closePhoto();
-    }
-  });
 
   // ===== Save photo (with Polaroid frame, as seen in preview) =====
   // 将相纸背景 + 猫图 + 四角括号 + 内框线 + 底部标题一起绘制到 canvas 后导出 JPEG
@@ -1683,6 +1668,48 @@
       ctx.fillText(brandPart, startX + w1, capY);
       if("letterSpacing" in ctx){ ctx.letterSpacing = "0px"; }
 
+      // 7b. 胶片型号印章（FILM_STAMP）— 位于底部标题下方，与预览一致
+      var stampText = FILM_STAMP[skin] || "";
+      if(stampText){
+        var stampFont = Math.round(8 * scale);
+        ctx.font = "400 " + stampFont + "px 'Space Mono', monospace";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        var stampY = capY + capFont + Math.round(3 * scale);
+        // opacity .45，深色皮肤用浅色字
+        ctx.fillStyle = (skin === "noir") ? "rgba(255,255,255,0.45)" : "rgba(26,20,16,0.45)";
+        if("letterSpacing" in ctx){ ctx.letterSpacing = (0.2 * stampFont).toFixed(1) + "px"; }
+        ctx.fillText(stampText, paperW / 2, stampY);
+        if("letterSpacing" in ctx){ ctx.letterSpacing = "0px"; }
+      }
+
+      // 7c. 胶片齿孔（顶部 + 底部）— 与预览的 .perforations 一致
+      // 9px 周期 = 3px 实心 + 6px 透明；高 4px；左右各留 7px
+      (function drawPerforations(){
+        var pH = Math.max(2, Math.round(4 * scale));
+        var period = Math.round(9 * scale);
+        var dark = Math.max(2, Math.round(3 * scale));
+        var xStart = Math.round(7 * scale);
+        var xEnd = paperW - xStart;
+        // 顶部 y：默认 top:3px；带顶部条纹的皮肤(classic/joycam) top:9px
+        var topY = (skin === "classic" || skin === "joycam") ? Math.round(9 * scale) : Math.round(3 * scale);
+        // 底部 y：默认 bottom:3px；带底部条纹的皮肤(limoland) bottom:9px
+        var botOff = (skin === "limoland") ? Math.round(9 * scale) : Math.round(3 * scale);
+        var botY = paperH - botOff - pH;
+        // 齿孔颜色（按皮肤）
+        if(skin === "noir"){
+          ctx.fillStyle = "rgba(255,255,255,0.18)";
+        } else if(skin === "joycam"){
+          ctx.fillStyle = "rgba(26,30,34,0.22)";
+        } else {
+          ctx.fillStyle = "rgba(0,0,0,0.22)";
+        }
+        for(var px = xStart; px + dark <= xEnd; px += period){
+          ctx.fillRect(px, topY, dark, pH);
+          ctx.fillRect(px, botY, dark, pH);
+        }
+      })();
+
       // 8. 导出 JPEG
       canvas.toBlob(function(blob){
         if(!blob){ showToast("保存失败，请重试"); return; }
@@ -1713,7 +1740,7 @@
   document.addEventListener("keydown", function(e){
     if(e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
     var k = e.key.toLowerCase();
-    if(k === "escape"){ if(photoOut.classList.contains("fullscreen")){ e.preventDefault(); closePhoto(); } }
+    if(k === "escape"){ if(photoOut.classList.contains("printing")){ e.preventDefault(); closePhoto(); } }
     else if(k === "c" || k === " "){ e.preventDefault(); takePhoto(); }
   });
 
