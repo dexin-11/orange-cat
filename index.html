@@ -130,6 +130,7 @@
     background:var(--cam-body);
     border-radius:20px 20px 14px 14px;
     padding:0;
+    touch-action:pan-y;
     box-shadow:
       0 2px 1px rgba(255,255,255,.7) inset,
       0 -3px 6px rgba(0,0,0,.08) inset,
@@ -333,6 +334,14 @@
   /* reduced motion */
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+  }
+  .frame.swishing{animation:swish .42s ease}
+  @keyframes swish{
+    0%{transform:translateX(0)}
+    25%{transform:translateX(-10px)}
+    55%{transform:translateX(7px)}
+    80%{transform:translateX(-3px)}
+    100%{transform:translateX(0)}
   }
 
   /* ===== Camera style switcher ===== */
@@ -627,8 +636,10 @@
   var SKIN_NAMES = {classic:"经典彩虹",instax:"instax 银黑",cam96:"96 Cam 撞色",noir:"全黑 NOIR",limoland:"LimoLand 笑脸"};
   var frameEl = $("frame");
   var styleBar = $("styleBar");
+  var currentSkin = "classic";
   function applySkin(name){
     if(SKINS.indexOf(name) < 0) name = "classic";
+    currentSkin = name;
     SKINS.forEach(function(s){ frameEl.classList.remove("skin-"+s); });
     if(name !== "classic") frameEl.classList.add("skin-"+name);
     try{ localStorage.setItem("cat-skin", name); }catch(e){}
@@ -636,6 +647,16 @@
     for(var i=0;i<chips.length;i++){
       chips[i].classList.toggle("is-active", chips[i].getAttribute("data-skin") === name);
     }
+  }
+  function switchSkin(dir){
+    var idx = SKINS.indexOf(currentSkin);
+    if(idx < 0) idx = 0;
+    idx = (idx + dir + SKINS.length) % SKINS.length;
+    applySkin(SKINS[idx]);
+    showToast(SKIN_NAMES[SKINS[idx]] || SKINS[idx]);
+    frameEl.classList.remove("swishing");
+    void frameEl.offsetWidth;
+    frameEl.classList.add("swishing");
   }
   styleBar.addEventListener("click", function(e){
     var btn = e.target.closest ? e.target.closest(".style-chip") : null;
@@ -648,6 +669,43 @@
     var saved = null;
     try{ saved = localStorage.getItem("cat-skin"); }catch(e){}
     applySkin(saved || "classic");
+  })();
+
+  // ===== Swipe left/right on the camera to switch skins =====
+  (function(){
+    var sx=0, sy=0, tracking=false, moved=false, suppressing=false;
+    var THRESH = 42;
+    function onDown(e){
+      if(e.button !== undefined && e.button !== 0) return;
+      sx = e.clientX; sy = e.clientY;
+      tracking = true; moved = false;
+    }
+    function onMove(e){
+      if(!tracking) return;
+      var dx = e.clientX - sx, dy = e.clientY - sy;
+      if(Math.abs(dx) > 12 || Math.abs(dy) > 12) moved = true;
+    }
+    function onUp(e){
+      if(!tracking) return;
+      tracking = false;
+      var dx = e.clientX - sx, dy = e.clientY - sy;
+      if(Math.abs(dx) >= THRESH && Math.abs(dx) > Math.abs(dy) * 1.4){
+        switchSkin(dx < 0 ? 1 : -1); // 左滑→下一个，右滑→上一个
+      }
+      if(moved){
+        // 抑制随后的 click，避免触发镜头 bounce
+        suppressing = true;
+        setTimeout(function(){ suppressing = false; }, 0);
+      }
+    }
+    frameEl.addEventListener("pointerdown", onDown);
+    frameEl.addEventListener("pointermove", onMove);
+    frameEl.addEventListener("pointerup", onUp);
+    frameEl.addEventListener("pointercancel", function(){ tracking = false; });
+    // 滑动后阻止同一序列的 click
+    frameEl.addEventListener("click", function(e){
+      if(suppressing){ e.stopPropagation(); e.preventDefault(); suppressing = false; }
+    }, true);
   })();
 
   // ===== Cat image rotation (crossfade every ~7s, uses prefetch pool) =====
