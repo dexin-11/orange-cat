@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>橘猫拍立得 · Polaroid</title>
+  <meta name="description" content="一只会随机吐出橘猫照片的拍立得相机" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app__header">
+      <h1 class="app__title">橘猫拍立得</h1>
+      <p class="app__subtitle">点一下快门，等一张照片慢慢显影</p>
+    </header>
+
+    <main class="camera">
+      <!-- 取景器：实时轮播橘猫 -->
+      <div class="viewfinder" id="viewfinder">
+        <img class="viewfinder__layer" id="vfImgA" alt="" />
+        <img class="viewfinder__layer" id="vfImgB" alt="" />
+        <div class="viewfinder__reticle" aria-hidden="true">
+          <span class="reticle reticle--tl"></span>
+          <span class="reticle reticle--tr"></span>
+          <span class="reticle reticle--bl"></span>
+          <span class="reticle reticle--br"></span>
+        </div>
+        <div class="viewfinder__status" id="vfStatus">取景中…</div>
+        <div class="viewfinder__flash" id="flash"></div>
+      </div>
+
+      <!-- 快门按钮 -->
+      <div class="shutter">
+        <button class="shutter__btn" id="shutterBtn" type="button" aria-label="拍照">
+          <span class="shutter__ring"></span>
+          <span class="shutter__core"></span>
+        </button>
+        <p class="shutter__hint" id="shutterHint">按下快门</p>
+      </div>
+
+      <!-- 出片口 -->
+      <div class="slot" aria-hidden="true">
+        <div class="slot__line"></div>
+      </div>
+    </main>
+
+    <!-- 已显影的照片堆 -->
+    <section class="tray" id="tray" aria-label="照片">
+      <p class="tray__empty" id="trayEmpty">还没有照片，按一下快门试试</p>
+    </section>
+
+    <footer class="app__footer">
+      <span>图片来源：img.hdx.dpdns.org</span>
+      <span>·</span>
+      <span>部署于 Cloudflare Pages</span>
+    </footer>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
