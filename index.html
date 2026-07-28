@@ -232,7 +232,7 @@
   /* photo emerges downward from the slot */
   .photo-out{
     position:relative;width:calc(100% - 40px);max-width:440px;
-    margin:0 auto;padding-bottom:8px;
+    margin:0 auto;padding:0;
     z-index:6;
   }
   .photo-out .photo-card{
@@ -241,7 +241,7 @@
     padding:16px 16px 44px;
     box-shadow:0 12px 28px rgba(0,0,0,.24);
     max-height:0;overflow:hidden;
-    transition:max-height 1.5s cubic-bezier(.22,1,.36,1);
+    transition:max-height 3.6s cubic-bezier(.34,1.4,.64,1);
   }
   .photo-out.printing .photo-card{
     max-height:760px;
@@ -255,7 +255,7 @@
   .photo-card .pic .develop{
     position:absolute;inset:0;z-index:4;pointer-events:none;
     background:linear-gradient(160deg,#0B0603 0%,#1F1408 55%,#2E1C0C 100%);
-    opacity:1;transition:opacity 6s ease 1.5s;
+    opacity:1;transition:opacity 8s ease 3.6s;
   }
   .photo-out.printing .photo-card .pic .develop{opacity:0}
   .photo-out.developed .photo-card .pic .develop{opacity:0 !important}
@@ -263,7 +263,7 @@
     width:100%;height:100%;object-fit:cover;
     opacity:1;
     filter:blur(14px) brightness(.12) sepia(1) saturate(.5) contrast(.7);
-    transition:filter 6s ease 1.5s;
+    transition:filter 8s ease 3.6s;
   }
   .photo-out.printing .photo-card .pic img,
   .photo-out.developed .photo-card .pic img{
@@ -1413,16 +1413,17 @@
 
       // Scroll the page down in sync with the photo emerging from the slot.
       // The photo-card grows from 0 to its full height via a max-height
-      // transition (1.5s, cubic-bezier(.22,1,.36,1)). We scroll by the same
-      // distance with the same easing so the photo stays in view as it prints,
+      // transition (3.6s, cubic-bezier(.34,1.4,.64,1)). We scroll by the same
+      // distance with a matching easing so the photo stays in view as it prints,
       // while the camera scrolls up out of sight.
       var card = photoOut.querySelector(".photo-card");
       var targetHeight = card.scrollHeight;
       var startScroll = window.pageYOffset || document.documentElement.scrollTop;
       var targetScroll = startScroll + targetHeight;
-      var duration = 1500;
+      var duration = 3600;
       var startTime = performance.now();
-      function ease(t){ return 1 - Math.pow(1 - t, 3); }
+      // 与 CSS 的 cubic-bezier(.34,1.4,.64,1) 近似的缓动
+      function ease(t){ t = 1 - Math.pow(1 - t, 3); return t; }
       function scrollStep(now){
         var elapsed = now - startTime;
         var t = Math.min(elapsed / duration, 1);
@@ -1435,22 +1436,22 @@
       }
       scrollSyncRAF = requestAnimationFrame(scrollStep);
 
-      // 打印完成后（1.5s 动画 + 少许停顿）放大到全屏
+      // 打印完成后（3.6s 动画 + 少许停顿）放大到全屏
       photoFsTimer = setTimeout(function(){
         enterFullscreen();
         photoFsTimer = null;
-      }, 1900);
+      }, 4000);
 
-      // 显影完成的兜底标记（确保 develop 层移除）
+      // 显影完成的兜底标记（打印 3.6s + 显影 8s）
       photoDevelopTimer = setTimeout(function(){
         photoOut.classList.add("developed");
         photoDevelopTimer = null;
-      }, 8000);
+      }, 12000);
 
       photoHideTimer = setTimeout(function(){
         closePhoto();
         photoHideTimer = null;
-      }, 20000);
+      }, 24000);
     }, 200);
   }
   // FLIP 平滑放大到全屏：记录原位 → 切换全屏样式 → 反向变换 → 过渡到自然位
