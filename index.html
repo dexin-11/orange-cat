@@ -712,6 +712,49 @@
     background:linear-gradient(90deg,#E63A2E,#C2241A);
   }
   .photo-out.skin-limoland .photo-card .cap{color:#1A1410}
+
+  /* ===== Fullscreen photo mode — frosted backdrop, camera hidden ===== */
+  body.photo-mode .frame{
+    opacity:0;visibility:hidden;
+    transition:opacity .4s ease,visibility .4s ease;
+  }
+  /* marquee + style-bar stay visible but will be frosted by the overlay */
+  body.photo-mode .marquee,body.photo-mode .style-bar{
+    opacity:.5;transition:opacity .5s ease;
+  }
+
+  .photo-out.fullscreen{
+    position:fixed;inset:0;z-index:8000;
+    width:100%;max-width:none;margin:0;padding:24px;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(15,11,8,.55);
+    backdrop-filter:blur(28px) saturate(1.2);
+    -webkit-backdrop-filter:blur(28px) saturate(1.2);
+  }
+  .photo-out.fullscreen .photo-card{
+    max-width:min(92vw,580px);
+    width:100%;max-height:92vh;overflow:hidden;
+    box-shadow:0 30px 80px rgba(0,0,0,.55);
+  }
+  .photo-out.fullscreen .photo-card .pic{
+    max-height:calc(92vh - 110px);
+  }
+  .photo-out.fullscreen .photo-card .cap{font-size:12px}
+
+  /* close button (visible only in fullscreen) */
+  .photo-close{
+    position:fixed;top:20px;right:20px;z-index:8100;
+    width:42px;height:42px;border-radius:50%;
+    border:1px solid rgba(255,255,255,.35);
+    background:rgba(255,255,255,.12);color:#fff;
+    font-size:20px;line-height:1;cursor:pointer;
+    display:none;align-items:center;justify-content:center;
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    transition:background .25s ease,transform .2s ease;
+    font-family:"Space Mono",monospace;
+  }
+  .photo-close:hover{background:rgba(255,255,255,.22);transform:scale(1.08)}
+  body.photo-mode .photo-close{display:flex}
 </style>
 </head>
 <body>
@@ -791,6 +834,8 @@
 
 <div class="toast" id="toast">已记录</div>
 
+<button class="photo-close" id="photoClose" type="button" aria-label="关闭照片">×</button>
+
 <script>
 (function(){
   "use strict";
@@ -830,6 +875,7 @@
   var flashScreen = $("flashScreen");
   var photoOut = $("photoOut");
   var photoImg = $("photoImg");
+  var photoClose = $("photoClose");
   var toast = $("toast");
 
   // ===== Audio (Web Audio API) =====
@@ -1016,13 +1062,13 @@
   // ===== Shutter / take photo =====
   var photoHideTimer = null;
   var photoDevelopTimer = null;
+  var photoFsTimer = null;
   var currentPhotoUrl = null;
   var currentPhotoSkin = "classic";
-  var scrollTimer = null;
   function takePhoto(){
     if(photoHideTimer){ clearTimeout(photoHideTimer); photoHideTimer = null; }
     if(photoDevelopTimer){ clearTimeout(photoDevelopTimer); photoDevelopTimer = null; }
-    if(scrollTimer){ clearInterval(scrollTimer); scrollTimer = null; }
+    if(photoFsTimer){ clearTimeout(photoFsTimer); photoFsTimer = null; }
 
     var lensUrl = active.src;
     currentPhotoUrl = lensUrl;
@@ -1043,35 +1089,38 @@
     void flashScreen.offsetWidth;
     flashScreen.classList.add("fire");
 
-    photoOut.classList.remove("printing");
-    photoOut.classList.remove("developed");
+    // reset to inline emerge state
+    photoOut.classList.remove("printing","developed","fullscreen");
+    document.body.classList.remove("photo-mode");
+    var card0 = photoOut.querySelector(".photo-card");
+    if(card0){ card0.style.transition=""; card0.style.transform=""; card0.style.transformOrigin=""; }
     void photoOut.offsetWidth; // reflow so develop animation replays
 
     setTimeout(function(){
       photoOut.classList.add("printing");
       showToast("已拍摄 · FILM #"+String(state.photos).padStart(3,"0"));
 
-      // Track the photo's bottom edge as it emerges: keep scrolling so the
-      // whole photo stays visible until it has fully slid out of the slot.
-      var margin = 40; // breathing room below the photo
-      var t0 = Date.now();
-      var duration = 1500; // slightly longer than the 1.4s expand transition
-      scrollTimer = setInterval(function(){
-        var rect = photoOut.getBoundingClientRect();
-        var viewportH = window.innerHeight;
-        var overshoot = rect.bottom - (viewportH - margin);
-        if(overshoot > 0){
-          // ease the per-frame step so motion feels smooth, not jumpy
-          window.scrollBy(0, Math.ceil(overshoot * 0.34));
-        }
-        if(Date.now() - t0 > duration){
-          // final nudge: ensure the photo is fully in view
-          var r2 = photoOut.getBoundingClientRect();
-          var left2 = r2.bottom - (viewportH - margin);
-          if(left2 > 0) window.scrollBy(0, Math.ceil(left2));
-          clearInterval(scrollTimer); scrollTimer = null;
-        }
-      }, 16);
+      // After the photo has emerged from the slot, expand to fullscreen
+      // with a frosted backdrop and hide the camera. Use FLIP to animate
+      // the photo-card smoothly from its inline position to centered.
+      photoFsTimer = setTimeout(function(){
+        var card = photoOut.querySelector(".photo-card");
+        var firstRect = card.getBoundingClientRect();
+        photoOut.classList.add("fullscreen");
+        document.body.classList.add("photo-mode");
+        window.scrollTo({top:0});
+        var lastRect = card.getBoundingClientRect();
+        var dx = firstRect.left - lastRect.left;
+        var dy = firstRect.top - lastRect.top;
+        var sw = firstRect.width / lastRect.width || 1;
+        card.style.transition = "none";
+        card.style.transform = "translate("+dx+"px,"+dy+"px) scale("+sw+")";
+        card.style.transformOrigin = "top left";
+        void card.offsetWidth; // reflow
+        card.style.transition = "transform .55s cubic-bezier(.22,1,.36,1)";
+        card.style.transform = "";
+        photoFsTimer = null;
+      }, 1600);
 
       photoDevelopTimer = setTimeout(function(){
         photoOut.classList.add("developed");
@@ -1079,12 +1128,29 @@
       }, 6800);
 
       photoHideTimer = setTimeout(function(){
-        photoOut.classList.remove("printing");
+        closePhoto();
         photoHideTimer = null;
       }, 14000);
     }, 200);
   }
+  function closePhoto(){
+    if(photoHideTimer){ clearTimeout(photoHideTimer); photoHideTimer = null; }
+    if(photoDevelopTimer){ clearTimeout(photoDevelopTimer); photoDevelopTimer = null; }
+    if(photoFsTimer){ clearTimeout(photoFsTimer); photoFsTimer = null; }
+    photoOut.classList.remove("fullscreen","printing","developed");
+    document.body.classList.remove("photo-mode");
+    // clear inline FLIP transform so next print starts clean
+    var card = photoOut.querySelector(".photo-card");
+    if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; }
+  }
   $("shutterTop").addEventListener("click", function(e){ e.stopPropagation(); takePhoto(); });
+  // Close button + click on backdrop (not the card) dismisses the photo
+  photoClose.addEventListener("click", function(e){ e.stopPropagation(); closePhoto(); });
+  photoOut.addEventListener("click", function(e){
+    if(photoOut.classList.contains("fullscreen") && e.target === photoOut){
+      closePhoto();
+    }
+  });
 
   // ===== Save photo (with Polaroid frame, as seen in preview) =====
   // 将相纸背景 + 猫图 + 四角括号 + 内框线 + 底部标题一起绘制到 canvas 后导出 JPEG
@@ -1308,7 +1374,8 @@
   document.addEventListener("keydown", function(e){
     if(e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
     var k = e.key.toLowerCase();
-    if(k === "c" || k === " "){ e.preventDefault(); takePhoto(); }
+    if(k === "escape"){ if(photoOut.classList.contains("fullscreen")){ e.preventDefault(); closePhoto(); } }
+    else if(k === "c" || k === " "){ e.preventDefault(); takePhoto(); }
     else if(k === "t"){ setTheme(!state.night); showToast(state.night?"切换至夜间模式":"切换至白天模式"); }
   });
 
