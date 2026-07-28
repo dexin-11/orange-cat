@@ -182,8 +182,10 @@
 
   /* lens: landscape window holding the cat photo (matches landscape photos) */
   .lens{
-    position:relative;margin:4px 20px 0;
-    aspect-ratio:4/3;border-radius:10px;
+    --lens-ratio:4/2.7;
+    --lens-margin:0 24px;
+    position:relative;margin:4px var(--lens-margin-x,24px) 0;
+    aspect-ratio:var(--lens-ratio);border-radius:10px;
     background:#0A0907;
     box-shadow:
       0 0 0 3px var(--ring),
@@ -198,6 +200,21 @@
     0 0 0 3px var(--ring-night),0 0 0 4px rgba(255,255,255,.15),
     0 0 0 8px var(--ring-night),0 0 0 9px rgba(0,0,0,.4),
     0 8px 18px rgba(0,0,0,.5),inset 0 2px 6px rgba(0,0,0,.7)}
+
+  /* 镜头装饰（默认隐藏，皮肤按需开启） */
+  .lens-badge,.lens-mirror{
+    position:absolute;display:none;z-index:60;pointer-events:none;
+  }
+  .lens-mirror{
+    top:8px;left:8px;width:18px;height:14px;border-radius:50%;
+    background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(180,200,220,.55) 60%,rgba(120,140,160,.35));
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.4),0 1px 2px rgba(0,0,0,.4);
+  }
+  .lens-badge{
+    bottom:6px;right:8px;
+    font-family:"Space Mono",monospace;font-size:8px;letter-spacing:.18em;
+    color:rgba(255,255,255,.7);text-shadow:0 1px 2px rgba(0,0,0,.7);
+  }
   /* subtle inner ring */
   .lens::before{
     content:"";position:absolute;inset:8px;border-radius:6px;z-index:5;
@@ -390,6 +407,7 @@
     --brand:#15151A;--brand-night:#E8E9ED;
     --shutter:radial-gradient(circle at 35% 30%,#5A5C66,#1C1C20 60%,#000);
     --ring:#1C1C20;--ring-night:#000;
+    --lens-ratio:4/2.6;--lens-margin-x:34px;
   }
   /* fine leather grain on lower body */
   .frame.skin-instax::after{
@@ -404,6 +422,17 @@
     opacity:.9;
   }
   body.night .frame.skin-instax::after{opacity:.6}
+  /* 银色横条 + instax 银色 logo 标牌 + 自拍镜 */
+  .frame.skin-instax::before{
+    content:"instax";position:absolute;top:43%;left:50%;transform:translate(-50%,0);
+    z-index:2;pointer-events:none;
+    font-family:"Fraunces",serif;font-weight:800;font-style:italic;font-size:13px;
+    color:#C9CBD2;letter-spacing:.14em;
+    text-shadow:0 1px 0 rgba(0,0,0,.6),0 0 6px rgba(255,255,255,.15);
+  }
+  .frame.skin-instax .lens-mirror{display:block;width:14px;height:11px;top:6px;left:6px}
+  .frame.skin-instax .lens-badge{display:block}
+  .frame.skin-instax .lens-badge::after{content:"mini 40"}
 
   /* ===== Skin: Polaroid 600 "96 Cam" — jazz red + neon totems ===== */
   .frame.skin-cam96{
@@ -413,6 +442,7 @@
     --brand:#FFF8EC;--brand-night:#FFF8EC;
     --shutter:radial-gradient(circle at 35% 30%,#FFE14D,#F2B03A 60%,#C97A1A);
     --ring:#1A1410;--ring-night:#000;
+    --lens-ratio:4/2.8;--lens-margin-x:26px;
   }
   /* scattered totem squares on body */
   .frame.skin-cam96::after{
@@ -426,6 +456,17 @@
     -webkit-mask:linear-gradient(180deg,transparent 0,transparent 12%,#000 14%,#000 38%,transparent 40%);
             mask:linear-gradient(180deg,transparent 0,transparent 12%,#000 14%,#000 38%,transparent 40%);
   }
+  /* 顶部霓虹色条 + 彩虹镜头环 + 闪光指示灯 */
+  .frame.skin-cam96::before{
+    content:"";position:absolute;top:14px;left:50%;transform:translateX(-50%);
+    width:22px;height:22px;border-radius:50%;z-index:2;pointer-events:none;
+    background:radial-gradient(circle at 40% 35%,#FFE14D,#F2B03A 50%,#C97A1A);
+    box-shadow:0 0 0 2px #1A1410,0 0 8px rgba(242,176,58,.5);
+  }
+  .frame.skin-cam96 .lens-badge{display:block}
+  .frame.skin-cam96 .lens-badge::after{content:"96 CAM"}
+  .frame.skin-cam96 .lens-mirror{display:block;width:12px;height:9px;top:6px;right:8px;left:auto;
+    background:linear-gradient(135deg,rgba(255,255,255,.85),rgba(255,200,100,.5) 60%,rgba(200,100,50,.3))}
 
   /* ===== Skin: all-black (instax SQUARE SQ40 / instax 210) ===== */
   .frame.skin-noir{
@@ -435,6 +476,7 @@
     --brand:#9A9AA0;--brand-night:#6A6A70;
     --shutter:radial-gradient(circle at 35% 30%,#3A3A40,#16161A 60%,#000);
     --ring:#0A0A0C;--ring-night:#000;
+    --lens-ratio:1/1;--lens-margin-x:54px;
   }
   /* subtle matte grain */
   .frame.skin-noir::after{
@@ -443,6 +485,17 @@
     background-image:radial-gradient(rgba(255,255,255,.025) 0.5px,transparent 1px);
     background-size:3px 3px;
   }
+  /* 侧边银色金属质感 + 旋转镜头环刻度 + SQ40 logo */
+  .frame.skin-noir::before{
+    content:"";position:absolute;left:6px;top:32%;bottom:6%;width:4px;z-index:2;
+    border-radius:2px;pointer-events:none;
+    background:linear-gradient(180deg,rgba(180,180,190,.4),rgba(120,120,130,.2) 50%,rgba(180,180,190,.4));
+    box-shadow:14px 0 0 -2px rgba(180,180,190,.3);
+  }
+  .frame.skin-noir .lens-badge{display:block}
+  .frame.skin-noir .lens-badge::after{content:"SQ40"}
+  .frame.skin-noir .lens-mirror{display:block;width:14px;height:11px;bottom:6px;right:8px;top:auto;left:auto;
+    background:linear-gradient(135deg,rgba(220,220,230,.7),rgba(140,140,150,.4) 60%,rgba(80,80,90,.3))}
 
   /* ===== Skin: Leica SOFORT "LimoLand" — white + Mr. Limo smileys + red strap ===== */
   .frame.skin-limoland{
@@ -452,6 +505,7 @@
     --brand:#1A1410;--brand-night:#F2EAD8;
     --shutter:radial-gradient(circle at 35% 30%,#FF6A5A,#E63A2E 60%,#9A1A12);
     --ring:#E8E4DC;--ring-night:#1A1614;
+    --lens-ratio:4/2.8;--lens-margin-x:30px;
   }
   /* red strap across the top */
   .frame.skin-limoland::before{
@@ -469,6 +523,11 @@
             mask:linear-gradient(180deg,transparent 0,transparent 13%,#000 16%,#000 40%,transparent 43%);
   }
   body.night .frame.skin-limoland::after{opacity:.25}
+  /* Leica 红 logo 圆点 + SOFORT 标牌 */
+  .frame.skin-limoland .lens-badge{display:block}
+  .frame.skin-limoland .lens-badge::after{content:"SOFORT"}
+  .frame.skin-limoland .lens-mirror{display:block;width:14px;height:11px;top:6px;right:8px;left:auto;
+    background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(200,180,160,.55) 60%,rgba(140,120,100,.35))}
 </style>
 </head>
 <body>
@@ -526,6 +585,8 @@
       </div>
       <div class="halftone" aria-hidden="true"></div>
       <div class="flash" id="flash"></div>
+      <div class="lens-badge" aria-hidden="true"></div>
+      <div class="lens-mirror" aria-hidden="true"></div>
     </div>
 
     <div class="print-slot" aria-hidden="true"></div>
