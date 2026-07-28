@@ -347,14 +347,6 @@
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.01ms !important;transition-duration:.01ms !important}
   }
-  .frame.swishing{animation:swish .42s ease;opacity:1}
-  @keyframes swish{
-    0%{transform:translateX(0)}
-    25%{transform:translateX(-10px)}
-    55%{transform:translateX(7px)}
-    80%{transform:translateX(-3px)}
-    100%{transform:translateX(0)}
-  }
 
   /* ===== Camera style switcher ===== */
   .style-bar{
@@ -669,14 +661,20 @@
     idx = (idx + dir + SKINS.length) % SKINS.length;
     applySkin(SKINS[idx]);
     showToast(SKIN_NAMES[SKINS[idx]] || SKINS[idx]);
-    frameEl.classList.remove("swishing");
-    void frameEl.offsetWidth;
-    frameEl.classList.add("swishing");
+    // 用 Web Animations API 做晃动，避免触碰 CSS animation 而干扰 fadeUp
+    var dx = dir > 0 ? -10 : 10;
+    if(frameEl.animate){
+      frameEl.animate(
+        [
+          {transform:'translateX(0)'},
+          {transform:'translateX('+dx+'px)', offset:0.3},
+          {transform:'translateX('+(-dx*0.6)+'px)', offset:0.6},
+          {transform:'translateX(0)'}
+        ],
+        {duration:380, easing:'ease'}
+      );
+    }
   }
-  // 动画结束移除 swishing，避免 class 残留与下次切换冲突
-  frameEl.addEventListener("animationend", function(){
-    frameEl.classList.remove("swishing");
-  });
   styleBar.addEventListener("click", function(e){
     var btn = e.target.closest ? e.target.closest(".style-chip") : null;
     if(!btn) return;
