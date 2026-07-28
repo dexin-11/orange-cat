@@ -234,21 +234,21 @@
 
   /* photo emerges downward from the slot */
   .photo-out{
-    position:relative;width:calc(100% - 40px);max-width:360px;
+    position:relative;width:calc(100% - 40px);max-width:440px;
     margin:0 auto;padding-bottom:8px;
     z-index:6;
   }
   .photo-out .photo-card{
     position:relative;
     background:#F7F1E6;
-    padding:12px 12px 34px;
-    box-shadow:0 10px 22px rgba(0,0,0,.22);
+    padding:16px 16px 44px;
+    box-shadow:0 12px 28px rgba(0,0,0,.24);
     max-height:0;opacity:0;overflow:hidden;
-    transition:max-height 1.2s cubic-bezier(.22,1,.36,1),opacity .4s ease;
+    transition:max-height 1.4s cubic-bezier(.22,1,.36,1),opacity .4s ease;
   }
   body.night .photo-out .photo-card{background:#1E1914}
   .photo-out.printing .photo-card{
-    max-height:520px;opacity:1;
+    max-height:720px;opacity:1;
   }
   /* art-frame */
   .photo-card .pic{
@@ -291,15 +291,15 @@
       linear-gradient(#C8531C,#C8531C) right bottom/1px 12px no-repeat;
   }
   .photo-card .cap{
-    font-family:"Space Mono",monospace;font-size:9px;color:#1A1410;
-    text-align:center;margin-top:10px;letter-spacing:.14em;text-transform:uppercase;
+    font-family:"Space Mono",monospace;font-size:11px;color:#1A1410;
+    text-align:center;margin-top:14px;letter-spacing:.16em;text-transform:uppercase;
   }
   body.night .photo-card .cap{color:var(--paper)}
   .photo-card .save-btn{
-    position:absolute;right:10px;bottom:8px;
-    font-family:"Space Mono",monospace;font-size:9px;letter-spacing:.14em;
+    position:absolute;right:14px;bottom:10px;
+    font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.16em;
     text-transform:uppercase;color:#C8531C;background:transparent;border:none;
-    cursor:pointer;padding:2px 4px;
+    cursor:pointer;padding:3px 6px;
   }
   .photo-card .save-btn:hover{color:#8A3A12}
 
@@ -548,19 +548,27 @@
       photoOut.classList.add("printing");
       showToast("已拍摄 · FILM #"+String(state.photos).padStart(3,"0"));
 
-      var start = window.pageYOffset;
-      var rect = photoOut.getBoundingClientRect();
-      var viewportH = window.innerHeight;
-      var desired = start + rect.bottom - viewportH + 60;
-      if(desired > start){
-        var duration = 1300, t0 = Date.now();
-        scrollTimer = setInterval(function(){
-          var p = Math.min(1, (Date.now()-t0)/duration);
-          var ease = 1 - Math.pow(1-p, 3);
-          window.scrollTo(0, start + (desired - start) * ease);
-          if(p >= 1){ clearInterval(scrollTimer); scrollTimer = null; }
-        }, 16);
-      }
+      // Track the photo's bottom edge as it emerges: keep scrolling so the
+      // whole photo stays visible until it has fully slid out of the slot.
+      var margin = 40; // breathing room below the photo
+      var t0 = Date.now();
+      var duration = 1500; // slightly longer than the 1.4s expand transition
+      scrollTimer = setInterval(function(){
+        var rect = photoOut.getBoundingClientRect();
+        var viewportH = window.innerHeight;
+        var overshoot = rect.bottom - (viewportH - margin);
+        if(overshoot > 0){
+          // ease the per-frame step so motion feels smooth, not jumpy
+          window.scrollBy(0, Math.ceil(overshoot * 0.34));
+        }
+        if(Date.now() - t0 > duration){
+          // final nudge: ensure the photo is fully in view
+          var r2 = photoOut.getBoundingClientRect();
+          var left2 = r2.bottom - (viewportH - margin);
+          if(left2 > 0) window.scrollBy(0, Math.ceil(left2));
+          clearInterval(scrollTimer); scrollTimer = null;
+        }
+      }, 16);
 
       photoDevelopTimer = setTimeout(function(){
         photoOut.classList.add("developed");
