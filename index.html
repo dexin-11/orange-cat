@@ -465,16 +465,11 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
           拍照
         </button>
-        <button class="btn ghost" id="meowBtn" aria-label="喵一声">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10v4M7 7v10M11 4v16M15 7v10M19 10v4"/></svg>
-          喵
-        </button>
       </div>
 
       <div class="stats">
         <div class="stat"><div class="label">打扰 / Visits</div><div class="val" id="statVisits">0</div></div>
         <div class="stat"><div class="label">胶片 / Frames</div><div class="val" id="statPhotos">0</div></div>
-        <div class="stat"><div class="label">喵叫 / Meows</div><div class="val" id="statMeows">0</div></div>
       </div>
     </section>
 
@@ -495,7 +490,7 @@
       <img class="cat-img" id="catImgB" alt="橘猫店员" />
 
       <!-- Speech bubble -->
-      <div class="bubble" id="bubble">喵～</div>
+      <div class="bubble" id="bubble"></div>
 
       <!-- Polaroid -->
       <div class="polaroid" id="polaroid">
@@ -535,7 +530,6 @@
   var state = {
     pets: 0,
     photos: 0,
-    meows: 0,
     visits: 0,
     night: false
   };
@@ -596,11 +590,6 @@
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+dur);
     o.connect(g); g.connect(ctx.destination);
     o.start(); o.stop(ctx.currentTime+dur);
-  }
-  function meowSound(){
-    var ctx = ac(); if(!ctx) return;
-    tone(440, 0.18, "sawtooth", 0.07, 720);
-    setTimeout(function(){ tone(620, 0.22, "sawtooth", 0.06, 480); }, 80);
   }
   function purrSound(){
     var ctx = ac(); if(!ctx) return;
@@ -748,15 +737,6 @@
   });
   $("petBtn").addEventListener("click", function(){ petCat(); });
 
-  // ===== Meow =====
-  function meow(){
-    state.meows++;
-    updateStats();
-    meowSound();
-    say(randomMeow());
-  }
-  $("meowBtn").addEventListener("click", meow);
-
   // ===== Shutter / take photo =====
   function takePhoto(){
     state.photos++;
@@ -790,7 +770,6 @@
   function updateStats(){
     $("statVisits").textContent = state.visits;
     $("statPhotos").textContent = state.photos;
-    $("statMeows").textContent = state.meows;
   }
 
   // ===== Keyboard shortcuts =====
@@ -798,7 +777,6 @@
     if(e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
     var k = e.key.toLowerCase();
     if(k === "p"){ petCat(); }
-    else if(k === "m"){ meow(); }
     else if(k === "c"){ takePhoto(); }
     else if(k === "t"){ setTheme(!state.night); showToast(state.night?"切换至夜间模式":"切换至白天模式"); }
   });
@@ -807,7 +785,7 @@
   state.visits = 1;
   updateStats();
   setTimeout(function(){
-    say("喵～ 欢迎光临");
+    say("欢迎光临");
     setTimeout(function(){ bubble.classList.remove("show"); }, 2400);
   }, 1400);
 
