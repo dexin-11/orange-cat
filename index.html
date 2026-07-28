@@ -577,22 +577,125 @@
   }
   $("shutterTop").addEventListener("click", function(e){ e.stopPropagation(); takePhoto(); });
 
-  // ===== Save photo =====
+  // ===== Save photo (with Polaroid frame, as seen in preview) =====
+  // 将相纸背景 + 猫图 + 四角括号 + 内框线 + 底部标题一起绘制到 canvas 后导出 JPEG
+  function drawCover(ctx, img, dx, dy, dw, dh){
+    var sAR = img.naturalWidth / img.naturalHeight;
+    var dAR = dw / dh;
+    var sw, sh, sx, sy;
+    if(sAR > dAR){ // 源图更宽 → 裁左右
+      sh = img.naturalHeight; sw = sh * dAR;
+      sx = (img.naturalWidth - sw) / 2; sy = 0;
+    } else {       // 源图更高 → 裁上下
+      sw = img.naturalWidth; sh = sw / dAR;
+      sx = 0; sy = (img.naturalHeight - sh) / 2;
+    }
+    ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+  }
+  function savePhoto(){
+    if(!currentPhotoUrl){ showToast("照片还在显影…"); return; }
+    showToast("正在生成照片…");
+    var im = new Image();
+    im.crossOrigin = "anonymous";
+    im.onload = function(){
+      // 以预览 400px 图宽为基准 ×2.4 输出高清
+      var scale = 2.4;
+      var imgW = Math.round(400 * scale);      // 960
+      var imgH = Math.round(imgW * 3 / 4);     // 720（4:3）
+      var padX = Math.round(16 * scale);       // 38
+      var padTop = Math.round(16 * scale);     // 38
+      var padBottom = Math.round(44 * scale);  // 106
+      var paperW = imgW + padX * 2;
+      var paperH = imgH + padTop + padBottom;
+
+      var canvas = document.createElement("canvas");
+      canvas.width = paperW; canvas.height = paperH;
+      var ctx = canvas.getContext("2d");
+
+      // 1. 相纸背景
+      ctx.fillStyle = "#F7F1E6";
+      ctx.fillRect(0, 0, paperW, paperH);
+
+      var ix = padX, iy = padTop;
+
+      // 2. 猫图（object-fit:cover）+ 与预览 developed 态一致的轻微胶片滤镜
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(ix, iy, imgW, imgH);
+      ctx.clip();
+      ctx.filter = "brightness(1.02) sepia(0.08) saturate(0.96) contrast(1.05)";
+      drawCover(ctx, im, ix, iy, imgW, imgH);
+      ctx.filter = "none";
+      ctx.restore();
+
+      // 3. 图片外框细线（1px rgba(0,0,0,.15)）
+      var b = Math.max(2, Math.round(1 * scale));
+      ctx.fillStyle = "rgba(0,0,0,0.15)";
+      ctx.fillRect(ix, iy, imgW, b);
+      ctx.fillRect(ix, iy + imgH - b, imgW, b);
+      ctx.fillRect(ix, iy, b, imgH);
+      ctx.fillRect(ix + imgW - b, iy, b, imgH);
+
+      // 4. 橙色四角括号（#C8531C，12px L 形）
+      var clen = Math.round(12 * scale);
+      var cth = Math.max(2, Math.round(1 * scale));
+      ctx.fillStyle = "#C8531C";
+      // 左上
+      ctx.fillRect(ix, iy, clen, cth);
+      ctx.fillRect(ix, iy, cth, clen);
+      // 右上
+      ctx.fillRect(ix + imgW - clen, iy, clen, cth);
+      ctx.fillRect(ix + imgW - cth, iy, cth, clen);
+      // 左下
+      ctx.fillRect(ix, iy + imgH - cth, clen, cth);
+      ctx.fillRect(ix, iy + imgH - clen, cth, clen);
+      // 右下
+      ctx.fillRect(ix + imgW - clen, iy + imgH - cth, clen, cth);
+      ctx.fillRect(ix + imgW - cth, iy + imgH - clen, cth, clen);
+
+      // 5. 内框白线（inset 6px，1px rgba(255,255,255,.25)）
+      var ins = Math.round(6 * scale);
+      ctx.strokeStyle = "rgba(255,255,255,0.25)";
+      ctx.lineWidth = Math.max(1, Math.round(scale * 0.6));
+      ctx.strokeRect(ix + ins, iy + ins, imgW - ins * 2, imgH - ins * 2);
+
+      // 6. 底部标题：FILM #001 · 猫咪照相馆
+      var capFont = Math.round(11 * scale);
+      ctx.fillStyle = "#1A1410";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.font = "700 " + capFont + "px 'Space Mono', monospace";
+      if("letterSpacing" in ctx){
+        ctx.letterSpacing = (0.16 * capFont).toFixed(1) + "px";
+      }
+      var capText = "FILM #" + String(state.photos).padStart(3,"0") + " · 猫咪照相馆";
+      var capY = iy + imgH + Math.round(14 * scale);
+      ctx.fillText(capText, paperW / 2, capY);
+
+      // 7. 导出 JPEG
+      canvas.toBlob(function(blob){
+        if(!blob){ showToast("保存失败，请重试"); return; }
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "cat-photo-FILM-" + String(state.photos).padStart(3,"0") + ".jpg";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1500);
+        showToast("已保存照片（含相框）");
+      }, "image/jpeg", 0.92);
+    };
+    im.onerror = function(){ showToast("保存失败，请重试"); };
+    im.src = currentPhotoUrl;
+  }
   $("saveBtn").addEventListener("click", function(e){
     e.stopPropagation();
-    if(!currentPhotoUrl){ showToast("照片还在显影…"); return; }
-    fetch(currentPhotoUrl).then(function(r){ return r.blob(); }).then(function(blob){
-      var a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "cat-photo-FILM-" + String(state.photos).padStart(3,"0") + ".jpg";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1500);
-      showToast("已保存照片");
-    }).catch(function(){
-      showToast("保存失败，请重试");
-    });
+    // 等 Space Mono 字体就绪，保证 canvas 文字与预览一致
+    if(document.fonts && document.fonts.ready){
+      document.fonts.ready.then(savePhoto);
+    } else {
+      savePhoto();
+    }
   });
 
   // ===== Keyboard shortcuts =====
