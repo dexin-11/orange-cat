@@ -225,8 +225,20 @@
     position:absolute;inset:0;background:#fff;opacity:0;
     pointer-events:none;z-index:50;
   }
-  .flash.fire{animation:flashAnim .45s ease-out}
-  @keyframes flashAnim{0%{opacity:0}12%{opacity:.95}100%{opacity:0}}
+  .flash.fire{animation:flashAnim .5s ease-out}
+  @keyframes flashAnim{0%{opacity:0}10%{opacity:1}100%{opacity:0}}
+  /* 全屏强闪光层：拍照时整屏爆白 */
+  .flash-screen{
+    position:fixed;inset:0;background:#fff;opacity:0;z-index:9000;
+    pointer-events:none;mix-blend-mode:screen;
+  }
+  .flash-screen.fire{animation:flashScreen .55s ease-out}
+  @keyframes flashScreen{
+    0%{opacity:0}
+    8%{opacity:1}
+    24%{opacity:.85}
+    100%{opacity:0}
+  }
 
   /* ===== Print slot at bottom of camera + emerging photo ===== */
   .print-slot{
@@ -335,7 +347,7 @@
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.01ms !important;transition-duration:.01ms !important}
   }
-  .frame.swishing{animation:swish .42s ease}
+  .frame.swishing{animation:swish .42s ease;opacity:1}
   @keyframes swish{
     0%{transform:translateX(0)}
     25%{transform:translateX(-10px)}
@@ -469,6 +481,8 @@
 </head>
 <body>
 
+<div class="flash-screen" id="flashScreen" aria-hidden="true"></div>
+
 <button class="toggle" id="themeToggle" aria-label="切换昼夜模式">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
   <span id="themeLabel">夜间</span>
@@ -576,6 +590,7 @@
   var catA = $("catImgA"), catB = $("catImgB");
   var active = catA;
   var flash = $("flash");
+  var flashScreen = $("flashScreen");
   var photoOut = $("photoOut");
   var photoImg = $("photoImg");
   var photoNum = $("photoNum");
@@ -658,6 +673,10 @@
     void frameEl.offsetWidth;
     frameEl.classList.add("swishing");
   }
+  // 动画结束移除 swishing，避免 class 残留与下次切换冲突
+  frameEl.addEventListener("animationend", function(){
+    frameEl.classList.remove("swishing");
+  });
   styleBar.addEventListener("click", function(e){
     var btn = e.target.closest ? e.target.closest(".style-chip") : null;
     if(!btn) return;
@@ -768,6 +787,9 @@
     flash.classList.remove("fire");
     void flash.offsetWidth;
     flash.classList.add("fire");
+    flashScreen.classList.remove("fire");
+    void flashScreen.offsetWidth;
+    flashScreen.classList.add("fire");
 
     photoOut.classList.remove("printing");
     photoOut.classList.remove("developed");
