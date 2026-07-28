@@ -9,6 +9,8 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐱%3C/text%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://img.hdx.dpdns.org" crossorigin>
+<link rel="dns-prefetch" href="https://img.hdx.dpdns.org">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -548,6 +550,20 @@
       .then(function(d){ return d.url ? (CAT_BASE + d.url) : null; })
       .catch(function(){ return null; });
   }
+  // prefetch one image end-to-end: fetch JSON + preload <img> until onload → resolve full URL
+  function prefetchCat(){
+    return fetchCatUrl().then(function(fullUrl){
+      if(!fullUrl) return null;
+      return new Promise(function(resolve){
+        var im = new Image();
+        im.onload = function(){ resolve(fullUrl); };
+        im.onerror = function(){ resolve(null); };
+        im.src = fullUrl;
+      });
+    });
+  }
+  // prefetch pool: keep one image always warming up so the next swap is instant
+  var next = prefetchCat();
 
   var $ = function(id){ return document.getElementById(id); };
   var catA = $("catImgA"), catB = $("catImgB");
@@ -648,15 +664,18 @@
     showToast(state.night ? "切换至夜间模式" : "切换至白天模式");
   });
 
-  // ===== Cat image rotation (crossfade every ~7s) =====
+  // ===== Cat image rotation (crossfade every ~7s, uses prefetch pool) =====
   var rotateTimer = null;
   function loadCat(){
-    fetchCatUrl().then(function(fullUrl){
+    // consume the warmed-up image; immediately start prefetching the next one
+    var consumed = next;
+    next = prefetchCat();
+    consumed.then(function(fullUrl){
       if(!fullUrl) return; // keep current image on failure
       var inactive = active === catA ? catB : catA;
+      // already preloaded → onload fires synchronously (cache hit)
       inactive.onload = function(){
         inactive.classList.add("loaded");
-        // fade out the previously visible one shortly after the new one is in
         var prev = active;
         setTimeout(function(){ prev.classList.remove("loaded"); }, 80);
         active = inactive;
@@ -748,18 +767,18 @@
     void flash.offsetWidth;
     flash.classList.add("fire");
 
-    // pull a fresh random cat image into the polaroid
+    // pull a fresh random cat image into the polaroid (consume prefetch pool → instant)
     photoNum.textContent = String(state.photos).padStart(3,"0");
     function showPolaroid(){
       polaroid.classList.add("show");
       setTimeout(function(){ polaroid.classList.remove("show"); }, 3500);
     }
-    fetchCatUrl().then(function(fullUrl){
+    var consumed = next;
+    next = prefetchCat(); // immediately warm up the next one
+    consumed.then(function(fullUrl){
       if(!fullUrl){ showPolaroid(); return; }
-      var loader = new Image();
-      loader.onload = function(){ photoImg.src = loader.src; showPolaroid(); };
-      loader.onerror = showPolaroid;
-      loader.src = fullUrl;
+      photoImg.src = fullUrl; // already preloaded → shows instantly
+      showPolaroid();
     });
 
     say("咔嚓！📸");
