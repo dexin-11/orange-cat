@@ -125,10 +125,11 @@
     --shutter:radial-gradient(circle at 35% 30%,#F25846,#C8531C 60%,#8A3A12);
     --ring:#2A2622;
     --ring-night:#15110D;
+    --frame-radius:20px 20px 14px 14px;
     position:relative;
     max-width:440px;width:100%;margin:0 auto;
     background:var(--cam-body);
-    border-radius:20px 20px 14px 14px;
+    border-radius:var(--frame-radius);
     padding:0;
     touch-action:pan-y;
     box-shadow:
@@ -183,20 +184,22 @@
   /* lens: landscape window holding the cat photo (matches landscape photos) */
   .lens{
     --lens-ratio:4/2.7;
-    --lens-margin:0 24px;
-    position:relative;margin:4px var(--lens-margin-x,24px) 0;
-    aspect-ratio:var(--lens-ratio);border-radius:10px;
-    background:#0A0907;
-    box-shadow:
+    --lens-margin-x:24px;
+    --lens-ring:
       0 0 0 3px var(--ring),
       0 0 0 4px rgba(255,255,255,.4),
       0 0 0 8px var(--ring),
       0 0 0 9px rgba(0,0,0,.15),
       0 8px 18px rgba(0,0,0,.3),
       inset 0 2px 6px rgba(0,0,0,.6);
+    --lens-radius:10px;
+    position:relative;margin:4px var(--lens-margin-x) 0;
+    aspect-ratio:var(--lens-ratio);border-radius:var(--lens-radius);
+    background:#0A0907;
+    box-shadow:var(--lens-ring);
     overflow:hidden;z-index:2;
   }
-  body.night .lens{box-shadow:
+  body.night .lens{--lens-ring:
     0 0 0 3px var(--ring-night),0 0 0 4px rgba(255,255,255,.15),
     0 0 0 8px var(--ring-night),0 0 0 9px rgba(0,0,0,.4),
     0 8px 18px rgba(0,0,0,.5),inset 0 2px 6px rgba(0,0,0,.7)}
@@ -399,131 +402,197 @@
       radial-gradient(circle at 70% 65%,#EB5757 0 3px,transparent 4px);
   }
 
-  /* ===== Skin: Fujifilm instax mini 40/41 — silver + black leather ===== */
+  /* ===== Skin: Fujifilm instax mini 40/41 — silver top + black leather ===== */
   .frame.skin-instax{
-    --cam-body:linear-gradient(170deg,#E8E9ED 0%,#C9CBD2 42%,#1C1C20 43%,#0C0C10 100%);
-    --cam-body-night:linear-gradient(170deg,#3C3C42 0%,#2C2C32 42%,#08080C 43%,#000 100%);
-    --stripe:linear-gradient(90deg,#C9CBD2 0%,#9EA0A8 50%,#C9CBD2 100%);
+    --cam-body:linear-gradient(180deg,#E8E9ED 0%,#C9CBD2 38%,#1C1C20 39%,#0C0C10 100%);
+    --cam-body-night:linear-gradient(180deg,#3C3C42 0%,#2C2C32 38%,#08080C 39%,#000 100%);
+    --stripe:linear-gradient(90deg,#9EA0A8,#C9CBD2,#9EA0A8);
     --brand:#15151A;--brand-night:#E8E9ED;
-    --shutter:radial-gradient(circle at 35% 30%,#5A5C66,#1C1C20 60%,#000);
+    --shutter:radial-gradient(circle at 35% 30%,#7A7C86,#2C2C32 60%,#0A0A0E);
     --ring:#1C1C20;--ring-night:#000;
-    --lens-ratio:4/2.6;--lens-margin-x:34px;
+    --frame-radius:22px 22px 16px 16px;
+    --lens-ratio:4/2.6;--lens-margin-x:36px;--lens-radius:8px;
+    --lens-ring:
+      0 0 0 2px #0C0C10,
+      0 0 0 4px #C9CBD2,
+      0 0 0 5px #6A6C72,
+      0 0 0 9px #C9CBD2,
+      0 0 0 10px rgba(0,0,0,.2),
+      0 8px 18px rgba(0,0,0,.35),
+      inset 0 2px 6px rgba(0,0,0,.6);
   }
-  /* fine leather grain on lower body */
+  body.night .frame.skin-instax{
+    --lens-ring:
+      0 0 0 2px #000,0 0 0 4px #4A4A52,0 0 0 5px #2A2A32,
+      0 0 0 9px #4A4A52,0 0 0 10px rgba(0,0,0,.5),
+      0 8px 18px rgba(0,0,0,.5),inset 0 2px 6px rgba(0,0,0,.7);
+  }
+  /* 皮革纹理占下半部 */
   .frame.skin-instax::after{
-    content:"";position:absolute;left:0;right:0;top:43%;bottom:0;
-    border-radius:0 0 14px 14px;pointer-events:none;z-index:1;
+    content:"";position:absolute;left:0;right:0;top:39%;bottom:0;
+    border-radius:0 0 16px 16px;pointer-events:none;z-index:1;
     background-color:#0C0C10;
     background-image:
-      radial-gradient(rgba(255,255,255,.06) 0.5px,transparent 1px),
-      radial-gradient(rgba(0,0,0,.5) 0.5px,transparent 1px);
-    background-size:3px 3px,5px 5px;
-    background-position:0 0,2px 2px;
-    opacity:.9;
+      radial-gradient(rgba(255,255,255,.05) 0.5px,transparent 1px),
+      radial-gradient(rgba(0,0,0,.6) 0.5px,transparent 1px);
+    background-size:3px 3px,5px 5px;background-position:0 0,2px 2px;
+    opacity:.95;
   }
-  body.night .frame.skin-instax::after{opacity:.6}
-  /* 银色横条 + instax 银色 logo 标牌 + 自拍镜 */
+  body.night .frame.skin-instax::after{opacity:.7}
+  /* 银色分隔线 + instax logo */
   .frame.skin-instax::before{
-    content:"instax";position:absolute;top:43%;left:50%;transform:translate(-50%,0);
+    content:"instax";position:absolute;top:39%;left:50%;transform:translate(-50%,8px);
     z-index:2;pointer-events:none;
-    font-family:"Fraunces",serif;font-weight:800;font-style:italic;font-size:13px;
-    color:#C9CBD2;letter-spacing:.14em;
-    text-shadow:0 1px 0 rgba(0,0,0,.6),0 0 6px rgba(255,255,255,.15);
+    font-family:"Fraunces",serif;font-weight:800;font-style:italic;font-size:14px;
+    color:#C9CBD2;letter-spacing:.16em;
+    text-shadow:0 1px 0 rgba(0,0,0,.6),0 0 8px rgba(255,255,255,.2);
   }
-  .frame.skin-instax .lens-mirror{display:block;width:14px;height:11px;top:6px;left:6px}
+  .frame.skin-instax .lens-mirror{display:block;width:13px;height:10px;top:6px;left:6px}
   .frame.skin-instax .lens-badge{display:block}
   .frame.skin-instax .lens-badge::after{content:"mini 40"}
 
-  /* ===== Skin: Polaroid 600 "96 Cam" — jazz red + neon totems ===== */
+  /* ===== Skin: Polaroid 600 "96 Cam" — jazz red + neon color blocks ===== */
   .frame.skin-cam96{
-    --cam-body:linear-gradient(170deg,#E63A2E 0%,#C2241A 50%,#9A1A12 100%);
-    --cam-body-night:linear-gradient(170deg,#7A1E16 0%,#5A120C 50%,#2A0804 100%);
-    --stripe:linear-gradient(90deg,#1E7FE0 0%,#1E7FE0 25%,#F2D03A 25%,#F2D03A 50%,#36C7D6 50%,#36C7D6 75%,#FF4FA3 75%);
+    --cam-body:linear-gradient(180deg,#E63A2E 0%,#C2241A 46%,#9A1A12 100%);
+    --cam-body-night:linear-gradient(180deg,#7A1E16 0%,#5A120C 46%,#2A0804 100%);
+    --stripe:linear-gradient(90deg,#F2D03A 0%,#F2D03A 25%,#1E7FE0 25%,#1E7FE0 50%,#FF4FA3 50%,#FF4FA3 75%,#36C7D6 75%);
     --brand:#FFF8EC;--brand-night:#FFF8EC;
-    --shutter:radial-gradient(circle at 35% 30%,#FFE14D,#F2B03A 60%,#C97A1A);
+    --shutter:radial-gradient(circle at 35% 30%,#FFE14D,#F2B03A 55%,#C97A1A);
     --ring:#1A1410;--ring-night:#000;
-    --lens-ratio:4/2.8;--lens-margin-x:26px;
+    --frame-radius:18px 18px 12px 12px;
+    --lens-ratio:4/2.8;--lens-margin-x:24px;--lens-radius:12px;
+    --lens-ring:
+      0 0 0 3px #1A1410,
+      0 0 0 5px #F2D03A,
+      0 0 0 7px #1E7FE0,
+      0 0 0 9px #FF4FA3,
+      0 0 0 11px #36C7D6,
+      0 0 0 12px rgba(0,0,0,.2),
+      0 8px 18px rgba(0,0,0,.35),
+      inset 0 2px 6px rgba(0,0,0,.6);
   }
-  /* scattered totem squares on body */
+  body.night .frame.skin-cam96{
+    --lens-ring:
+      0 0 0 3px #000,0 0 0 5px #7A6A1A,0 0 0 7px #1A4A80,
+      0 0 0 9px #8A2A6A,0 0 0 11px #1A6A7A,0 0 0 12px rgba(0,0,0,.5),
+      0 8px 18px rgba(0,0,0,.5),inset 0 2px 6px rgba(0,0,0,.7);
+  }
+  /* 大块撞色图腾布满整个机身（更明显） */
   .frame.skin-cam96::after{
-    content:"";position:absolute;inset:0;border-radius:20px 20px 14px 14px;
-    pointer-events:none;z-index:1;opacity:.22;mix-blend-mode:screen;
+    content:"";position:absolute;inset:0;border-radius:18px 18px 12px 12px;
+    pointer-events:none;z-index:1;opacity:.45;mix-blend-mode:screen;
     background-image:
       linear-gradient(45deg,#FFD23A 25%,transparent 25%,transparent 50%,#36C7D6 50%,#36C7D6 75%,transparent 75%),
       linear-gradient(-45deg,#FF4FA3 25%,transparent 25%,transparent 50%,#1E7FE0 50%,#1E7FE0 75%,transparent 75%);
-    background-size:26px 26px,26px 26px;
-    background-position:0 0,13px 13px;
-    -webkit-mask:linear-gradient(180deg,transparent 0,transparent 12%,#000 14%,#000 38%,transparent 40%);
-            mask:linear-gradient(180deg,transparent 0,transparent 12%,#000 14%,#000 38%,transparent 40%);
+    background-size:28px 28px,28px 28px;background-position:0 0,14px 14px;
   }
-  /* 顶部霓虹色条 + 彩虹镜头环 + 闪光指示灯 */
+  body.night .frame.skin-cam96::after{opacity:.3}
+  /* 顶部黄色闪光指示灯方块 */
   .frame.skin-cam96::before{
-    content:"";position:absolute;top:14px;left:50%;transform:translateX(-50%);
-    width:22px;height:22px;border-radius:50%;z-index:2;pointer-events:none;
-    background:radial-gradient(circle at 40% 35%,#FFE14D,#F2B03A 50%,#C97A1A);
-    box-shadow:0 0 0 2px #1A1410,0 0 8px rgba(242,176,58,.5);
+    content:"";position:absolute;top:12px;left:50%;transform:translateX(-50%);
+    width:18px;height:18px;border-radius:3px;z-index:2;pointer-events:none;
+    background:linear-gradient(135deg,#FFE14D,#F2B03A 60%,#C97A1A);
+    box-shadow:0 0 0 2px #1A1410,0 0 10px rgba(242,176,58,.6),inset 0 1px 1px rgba(255,255,255,.6);
   }
+  .frame.skin-cam96 .cam-top .flash-lamp{display:none}
   .frame.skin-cam96 .lens-badge{display:block}
   .frame.skin-cam96 .lens-badge::after{content:"96 CAM"}
   .frame.skin-cam96 .lens-mirror{display:block;width:12px;height:9px;top:6px;right:8px;left:auto;
     background:linear-gradient(135deg,rgba(255,255,255,.85),rgba(255,200,100,.5) 60%,rgba(200,100,50,.3))}
 
-  /* ===== Skin: all-black (instax SQUARE SQ40 / instax 210) ===== */
+  /* ===== Skin: all-black SQ40 — square format, minimalist ===== */
   .frame.skin-noir{
-    --cam-body:linear-gradient(170deg,#2B2B30 0%,#16161A 50%,#0A0A0C 100%);
-    --cam-body-night:linear-gradient(170deg,#18181C 0%,#0C0C0E 50%,#000 100%);
-    --stripe:linear-gradient(90deg,#16161A 0%,#2E2E34 50%,#16161A 100%);
-    --brand:#9A9AA0;--brand-night:#6A6A70;
+    --cam-body:linear-gradient(180deg,#2B2B30 0%,#16161A 50%,#0A0A0C 100%);
+    --cam-body-night:linear-gradient(180deg,#18181C 0%,#0C0C0E 50%,#000 100%);
+    --stripe:linear-gradient(90deg,#0A0A0C,#2E2E34,#0A0A0C);
+    --brand:#6A6A70;--brand-night:#4A4A50;
     --shutter:radial-gradient(circle at 35% 30%,#3A3A40,#16161A 60%,#000);
     --ring:#0A0A0C;--ring-night:#000;
-    --lens-ratio:1/1;--lens-margin-x:54px;
+    --frame-radius:10px 10px 8px 8px;
+    --lens-ratio:1/1;--lens-margin-x:64px;--lens-radius:6px;
+    --lens-ring:
+      0 0 0 1px #2A2A30,
+      0 0 0 3px #0A0A0C,
+      0 0 0 4px #4A4A52,
+      0 0 0 5px #2A2A30,
+      0 0 0 9px #0A0A0C,
+      0 8px 18px rgba(0,0,0,.4),
+      inset 0 2px 6px rgba(0,0,0,.7);
   }
-  /* subtle matte grain */
+  body.night .frame.skin-noir{
+    --lens-ring:
+      0 0 0 1px #1A1A20,0 0 0 3px #000,0 0 0 4px #2A2A32,
+      0 0 0 5px #1A1A20,0 0 0 9px #000,
+      0 8px 18px rgba(0,0,0,.5),inset 0 2px 6px rgba(0,0,0,.8);
+  }
+  /* 极细磨砂颗粒 */
   .frame.skin-noir::after{
-    content:"";position:absolute;inset:0;border-radius:20px 20px 14px 14px;
-    pointer-events:none;z-index:1;opacity:.5;
-    background-image:radial-gradient(rgba(255,255,255,.025) 0.5px,transparent 1px);
+    content:"";position:absolute;inset:0;border-radius:10px 10px 8px 8px;
+    pointer-events:none;z-index:1;opacity:.4;
+    background-image:radial-gradient(rgba(255,255,255,.03) 0.5px,transparent 1px);
     background-size:3px 3px;
   }
-  /* 侧边银色金属质感 + 旋转镜头环刻度 + SQ40 logo */
+  /* 四角银色金属包边 + 旋转刻度环 */
   .frame.skin-noir::before{
-    content:"";position:absolute;left:6px;top:32%;bottom:6%;width:4px;z-index:2;
-    border-radius:2px;pointer-events:none;
-    background:linear-gradient(180deg,rgba(180,180,190,.4),rgba(120,120,130,.2) 50%,rgba(180,180,190,.4));
-    box-shadow:14px 0 0 -2px rgba(180,180,190,.3);
+    content:"";position:absolute;inset:0;border-radius:10px 10px 8px 8px;
+    pointer-events:none;z-index:2;
+    border:1px solid transparent;
+    background:
+      linear-gradient(135deg,#6A6A72 0 6px,transparent 6px) top left/14px 14px no-repeat,
+      linear-gradient(225deg,#6A6A72 0 6px,transparent 6px) top right/14px 14px no-repeat,
+      linear-gradient(45deg,#6A6A72 0 6px,transparent 6px) bottom left/14px 14px no-repeat,
+      linear-gradient(315deg,#6A6A72 0 6px,transparent 6px) bottom right/14px 14px no-repeat;
+    opacity:.5;
   }
+  .frame.skin-noir .cam-top{padding:14px 18px 8px;gap:10px}
+  .frame.skin-noir .cam-top .vf{width:14px;height:10px;border-radius:2px}
+  .frame.skin-noir .cam-top .flash-lamp{width:16px;height:16px}
+  .frame.skin-noir .cam-top .shutter{width:30px;height:30px}
   .frame.skin-noir .lens-badge{display:block}
   .frame.skin-noir .lens-badge::after{content:"SQ40"}
-  .frame.skin-noir .lens-mirror{display:block;width:14px;height:11px;bottom:6px;right:8px;top:auto;left:auto;
-    background:linear-gradient(135deg,rgba(220,220,230,.7),rgba(140,140,150,.4) 60%,rgba(80,80,90,.3))}
+  .frame.skin-noir .lens-mirror{display:block;width:13px;height:10px;bottom:6px;right:8px;top:auto;left:auto;
+    background:linear-gradient(135deg,rgba(220,220,230,.6),rgba(140,140,150,.35) 60%,rgba(80,80,90,.25))}
 
-  /* ===== Skin: Leica SOFORT "LimoLand" — white + Mr. Limo smileys + red strap ===== */
+  /* ===== Skin: Leica SOFORT "LimoLand" — white + smileys + red strap ===== */
   .frame.skin-limoland{
-    --cam-body:linear-gradient(170deg,#FFFFFF 0%,#F4F2EE 50%,#E8E4DC 100%);
-    --cam-body-night:linear-gradient(170deg,#2E2A26 0%,#242020 50%,#1A1614 100%);
+    --cam-body:linear-gradient(180deg,#FFFFFF 0%,#F4F2EE 50%,#E8E4DC 100%);
+    --cam-body-night:linear-gradient(180deg,#2E2A26 0%,#242020 50%,#1A1614 100%);
     --stripe:linear-gradient(90deg,#E63A2E,#C2241A);
     --brand:#1A1410;--brand-night:#F2EAD8;
-    --shutter:radial-gradient(circle at 35% 30%,#FF6A5A,#E63A2E 60%,#9A1A12);
+    --shutter:radial-gradient(circle at 35% 30%,#FF8A7A,#E63A2E 55%,#9A1A12);
     --ring:#E8E4DC;--ring-night:#1A1614;
-    --lens-ratio:4/2.8;--lens-margin-x:30px;
+    --frame-radius:24px 24px 18px 18px;
+    --lens-ratio:4/2.8;--lens-margin-x:28px;--lens-radius:14px;
+    --lens-ring:
+      0 0 0 3px #E63A2E,
+      0 0 0 4px #FFFFFF,
+      0 0 0 6px #C2241A,
+      0 0 0 8px #E8E4DC,
+      0 0 0 9px rgba(0,0,0,.12),
+      0 8px 18px rgba(0,0,0,.25),
+      inset 0 2px 6px rgba(0,0,0,.5);
   }
-  /* red strap across the top */
+  body.night .frame.skin-limoland{
+    --lens-ring:
+      0 0 0 3px #8A2A1A,0 0 0 4px #2E2A26,0 0 0 6px #6A1A12,
+      0 0 0 8px #1A1614,0 0 0 9px rgba(0,0,0,.4),
+      0 8px 18px rgba(0,0,0,.5),inset 0 2px 6px rgba(0,0,0,.7);
+  }
+  /* 红色背带（两侧可见弧形） */
   .frame.skin-limoland::before{
-    content:"";position:absolute;top:-5px;left:18%;right:18%;height:7px;z-index:3;
+    content:"";position:absolute;top:-7px;left:14%;right:14%;height:9px;z-index:3;
     background:linear-gradient(180deg,#FF6A5A,#C2241A);
-    border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.2);
+    border-radius:5px;
+    box-shadow:0 1px 3px rgba(0,0,0,.25),inset 0 1px 1px rgba(255,255,255,.3);
   }
-  /* Mr. Limo smiley pattern on body */
+  /* 大面积笑脸图案布满整个机身（更密集更明显） */
   .frame.skin-limoland::after{
-    content:"";position:absolute;inset:0;border-radius:20px 20px 14px 14px;
-    pointer-events:none;z-index:1;opacity:.5;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cg%3E%3Ccircle cx='16' cy='16' r='8' fill='%23F2C94C'/%3E%3Ccircle cx='13' cy='14' r='1.2' fill='%231A1410'/%3E%3Ccircle cx='19' cy='14' r='1.2' fill='%231A1410'/%3E%3Cpath d='M11 18 Q16 22 21 18' stroke='%231A1410' stroke-width='1.2' fill='none' stroke-linecap='round'/%3E%3C/g%3E%3Cg%3E%3Ccircle cx='48' cy='48' r='8' fill='%23EB5757'/%3E%3Ccircle cx='45' cy='46' r='1.2' fill='%231A1410'/%3E%3Ccircle cx='51' cy='46' r='1.2' fill='%231A1410'/%3E%3Cpath d='M43 50 Q48 54 53 50' stroke='%231A1410' stroke-width='1.2' fill='none' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E");
-    background-repeat:repeat;background-size:64px 64px;
-    -webkit-mask:linear-gradient(180deg,transparent 0,transparent 13%,#000 16%,#000 40%,transparent 43%);
-            mask:linear-gradient(180deg,transparent 0,transparent 13%,#000 16%,#000 40%,transparent 43%);
+    content:"";position:absolute;inset:0;border-radius:24px 24px 18px 18px;
+    pointer-events:none;z-index:1;opacity:.7;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='52'%3E%3Cg%3E%3Ccircle cx='13' cy='13' r='7' fill='%23F2C94C'/%3E%3Ccircle cx='10.5' cy='11.5' r='1.1' fill='%231A1410'/%3E%3Ccircle cx='15.5' cy='11.5' r='1.1' fill='%231A1410'/%3E%3Cpath d='M8.5 14.5 Q13 18 17.5 14.5' stroke='%231A1410' stroke-width='1.1' fill='none' stroke-linecap='round'/%3E%3C/g%3E%3Cg%3E%3Ccircle cx='39' cy='39' r='7' fill='%23EB5757'/%3E%3Ccircle cx='36.5' cy='37.5' r='1.1' fill='%231A1410'/%3E%3Ccircle cx='41.5' cy='37.5' r='1.1' fill='%231A1410'/%3E%3Cpath d='M34.5 40.5 Q39 44 43.5 40.5' stroke='%231A1410' stroke-width='1.1' fill='none' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat:repeat;background-size:52px 52px;
   }
-  body.night .frame.skin-limoland::after{opacity:.25}
-  /* Leica 红 logo 圆点 + SOFORT 标牌 */
+  body.night .frame.skin-limoland::after{opacity:.35}
   .frame.skin-limoland .lens-badge{display:block}
   .frame.skin-limoland .lens-badge::after{content:"SOFORT"}
   .frame.skin-limoland .lens-mirror{display:block;width:14px;height:11px;top:6px;right:8px;left:auto;
