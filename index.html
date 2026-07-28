@@ -4,8 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#F2EAD8" />
-<title>418 · 暗房冲洗中 — ORANGECAT</title>
-<meta name="description" content="HTTP 418 I'm a teapot — 橘猫相机店暗房冲洗中，请稍后再访。" />
+<title>猫咪照相馆 — Cat Photo Studio</title>
+<meta name="description" content="猫咪照相馆 — 一台拍立得，一只橘猫，一张慢慢显影的照片。" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐱%3C/text%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,7 +24,6 @@
     --cream:#FFF8EC;
     --rule:rgba(26,20,16,.16);
     --rule-strong:rgba(26,20,16,.32);
-    --frame-pad:clamp(20px,3vw,32px);
   }
   body.night{
     --paper:#1B1612;
@@ -53,170 +52,62 @@
   }
   body.night{background:var(--paper)}
 
-  /* ===== Layout ===== */
+  /* ===== Studio background — soft warm vignette ===== */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(ellipse at 50% 22%,rgba(255,220,170,.35),transparent 60%),
+      radial-gradient(ellipse at 50% 100%,rgba(200,83,28,.10),transparent 70%);
+  }
+  body.night::before{
+    background:
+      radial-gradient(ellipse at 50% 22%,rgba(232,122,62,.12),transparent 60%),
+      radial-gradient(ellipse at 50% 100%,rgba(0,0,0,.4),transparent 70%);
+  }
+
+  /* ===== Stage: studio marquee + camera ===== */
   .stage{
     position:relative;z-index:1;
     min-height:100vh;
-    display:grid;
-    grid-template-rows:auto 1fr auto;
-    padding:clamp(18px,3vw,32px) clamp(20px,5vw,72px);
-    gap:clamp(20px,3vw,36px);
-    max-width:1440px;margin:0 auto;
+    display:flex;flex-direction:column;align-items:center;
+    padding:clamp(28px,5vw,56px) clamp(20px,5vw,72px) clamp(40px,6vw,80px);
+    gap:clamp(20px,3vw,32px);
   }
 
-  /* ===== Top bar ===== */
-  .topbar{
-    display:flex;justify-content:space-between;align-items:baseline;
-    gap:24px;flex-wrap:wrap;
-    font-family:"Space Mono",monospace;font-size:11px;
-    letter-spacing:.14em;text-transform:uppercase;
-    color:var(--ink-soft);
-    border-bottom:1px solid var(--rule);
-    padding-bottom:14px;
+  /* ===== Studio marquee ===== */
+  .marquee{
+    text-align:center;
+    display:flex;flex-direction:column;align-items:center;gap:8px;
   }
-  .topbar .left{display:flex;gap:18px;align-items:baseline;flex-wrap:wrap}
-  .brand{
+  .marquee .sign{
     font-family:"Fraunces",serif;font-style:italic;font-weight:600;
-    font-size:14px;letter-spacing:0;text-transform:none;
+    font-variation-settings:"opsz" 48,"SOFT" 60;
+    font-size:clamp(30px,4.6vw,46px);
+    letter-spacing:.01em;
     color:var(--ink);
-    font-variation-settings:"opsz" 14,"SOFT" 50;
+    line-height:1;
   }
-  .brand::before{
-    content:"";display:inline-block;width:6px;height:6px;border-radius:50%;
-    background:var(--sienna);margin-right:10px;vertical-align:middle;
-    animation:pulse 2.4s ease-in-out infinite;
+  .marquee .sign .accent{color:var(--sienna);font-style:normal;font-weight:700}
+  .marquee .sub{
+    font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.32em;
+    text-transform:uppercase;color:var(--ink-faint);
   }
-  @keyframes pulse{50%{opacity:.4;transform:scale(.7)}}
-  .topbar .right{display:flex;gap:18px;align-items:baseline}
-  .status-tag{color:var(--sienna-deep);font-weight:700}
-  body.night .status-tag{color:var(--sienna)}
+  .marquee .rule{
+    width:64px;height:1px;background:var(--rule-strong);margin-top:4px;
+  }
+
+  /* ===== Floating theme toggle ===== */
   .toggle{
-    border:1px solid var(--rule-strong);background:transparent;color:var(--ink);
+    position:fixed;top:20px;right:20px;z-index:200;
+    border:1px solid var(--rule-strong);background:var(--paper);color:var(--ink);
     font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.14em;
     text-transform:uppercase;
-    padding:6px 12px;border-radius:0;cursor:pointer;
+    padding:7px 12px;border-radius:0;cursor:pointer;
     transition:all .25s ease;display:inline-flex;align-items:center;gap:8px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
   }
   .toggle:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
   .toggle svg{width:11px;height:11px}
-
-  /* ===== Main grid ===== */
-  .main{
-    display:grid;
-    grid-template-columns:1.15fr 1fr;
-    gap:clamp(32px,5vw,72px);
-    align-items:center;
-    padding:clamp(16px,2vw,28px) 0;
-  }
-  @media (max-width:920px){
-    .main{grid-template-columns:1fr;gap:36px}
-  }
-
-  /* ===== Left: typography block ===== */
-  .copy{position:relative}
-  .eyebrow{
-    display:flex;align-items:center;gap:14px;
-    font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.18em;
-    text-transform:uppercase;color:var(--sienna-deep);
-    margin-bottom:28px;
-  }
-  body.night .eyebrow{color:var(--sienna)}
-  .eyebrow .line{flex:0 0 36px;height:1px;background:currentColor}
-  .eyebrow .dot{width:5px;height:5px;border-radius:50%;background:currentColor}
-
-  h1.status{
-    font-family:"Fraunces",serif;
-    font-weight:300;
-    font-variation-settings:"opsz" 144,"SOFT" 0;
-    font-size:clamp(120px,21vw,260px);
-    line-height:.82;
-    letter-spacing:-.05em;
-    color:var(--ink);
-    margin-bottom:6px;
-    position:relative;
-    display:flex;align-items:baseline;gap:.04em;
-  }
-  h1.status .n{
-    display:inline-block;
-    font-weight:900;
-    font-variation-settings:"opsz" 144,"SOFT" 0;
-    color:var(--sienna);
-    position:relative;
-  }
-
-  .subtitle{
-    font-family:"Fraunces",serif;font-style:italic;font-weight:400;
-    font-variation-settings:"opsz" 24,"SOFT" 80;
-    font-size:clamp(18px,2.2vw,24px);
-    color:var(--ink-soft);
-    margin:14px 0 36px;
-    letter-spacing:.01em;
-  }
-  .subtitle .am{color:var(--sienna);font-weight:600;font-style:normal;font-variation-settings:"opsz" 24,"SOFT" 30}
-
-  .body-copy{
-    font-family:"Fraunces",serif;font-weight:400;
-    font-variation-settings:"opsz" 14,"SOFT" 50;
-    font-size:clamp(15px,1.4vw,17px);
-    color:var(--ink-soft);
-    max-width:42ch;
-    line-height:1.65;
-    margin-bottom:36px;
-  }
-  .body-copy em{
-    font-style:italic;color:var(--ink);font-weight:500;
-    font-variation-settings:"opsz" 14,"SOFT" 80;
-  }
-
-  /* ===== Action buttons ===== */
-  .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-  .btn{
-    font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.14em;
-    text-transform:uppercase;font-weight:700;
-    padding:13px 20px;border-radius:0;cursor:pointer;
-    border:1px solid var(--ink);background:var(--ink);color:var(--paper);
-    display:inline-flex;align-items:center;gap:10px;
-    transition:all .2s ease;
-    user-select:none;
-  }
-  .btn:hover{background:var(--sienna);border-color:var(--sienna);color:var(--cream)}
-  .btn:active{transform:translateY(1px)}
-  .btn.ghost{background:transparent;color:var(--ink)}
-  .btn.ghost:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-  .btn svg{width:13px;height:13px;flex-shrink:0}
-  .btn .count{
-    font-family:"Fraunces",serif;font-style:italic;font-weight:600;
-    font-variation-settings:"opsz" 14;
-    font-size:13px;letter-spacing:0;
-    opacity:.7;margin-left:2px;
-  }
-
-  /* ===== Stats row ===== */
-  .stats{
-    margin-top:44px;
-    display:flex;gap:0;flex-wrap:wrap;
-    border-top:1px solid var(--rule);
-    padding-top:20px;
-  }
-  .stat{
-    flex:1 1 auto;min-width:90px;
-    padding-right:24px;
-    border-right:1px solid var(--rule);
-    margin-right:24px;
-  }
-  .stat:last-child{border-right:none;margin-right:0}
-  .stat .label{
-    font-family:"Space Mono",monospace;font-size:9px;letter-spacing:.18em;
-    text-transform:uppercase;color:var(--ink-faint);
-    margin-bottom:6px;
-  }
-  .stat .val{
-    font-family:"Fraunces",serif;font-weight:300;
-    font-variation-settings:"opsz" 60;
-    font-size:34px;line-height:1;color:var(--ink);
-    letter-spacing:-.02em;
-  }
-  body.night .stat .val{color:var(--paper)}
 
   /* ===== Polaroid camera body ===== */
   .frame{
@@ -333,36 +224,6 @@
   .flash.fire{animation:flashAnim .45s ease-out}
   @keyframes flashAnim{0%{opacity:0}12%{opacity:.95}100%{opacity:0}}
 
-  .bubble{
-    position:absolute;
-    background:var(--ink);color:var(--paper);
-    padding:8px 14px;
-    font-family:"Fraunces",serif;font-style:italic;font-weight:500;
-    font-variation-settings:"opsz" 14,"SOFT" 70;
-    font-size:14px;white-space:nowrap;
-    opacity:0;transform:translateX(-50%) translateY(6px);transform-origin:bottom center;
-    transition:opacity .25s ease,transform .25s cubic-bezier(.34,1.56,.64,1);
-    pointer-events:none;z-index:10;
-    top:12%;left:50%;
-  }
-  body.night .bubble{background:var(--paper);color:var(--ink)}
-  .bubble.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  .bubble::after{
-    content:"";position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);
-    width:0;height:0;border:5px solid transparent;border-top-color:var(--ink);
-  }
-  body.night .bubble::after{border-top-color:var(--paper)}
-
-  .heart{
-    position:absolute;width:14px;height:14px;pointer-events:none;
-    z-index:20;animation:floatHeart 1.3s ease-out forwards;
-  }
-  @keyframes floatHeart{
-    0%{opacity:1;transform:translate(0,0) scale(.4) rotate(0)}
-    25%{transform:translate(6px,-18px) scale(1) rotate(8deg)}
-    100%{opacity:0;transform:translate(var(--dx,30px),-100px) scale(.5) rotate(20deg)}
-  }
-
   /* ===== Print slot at bottom of camera + emerging photo ===== */
   .print-slot{
     margin:14px 20px 16px;height:10px;border-radius:5px;
@@ -442,27 +303,6 @@
   }
   .photo-card .save-btn:hover{color:#8A3A12}
 
-  /* ===== Footer ===== */
-  .foot{
-    display:flex;justify-content:space-between;align-items:baseline;gap:16px;
-    flex-wrap:wrap;
-    font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.14em;
-    text-transform:uppercase;color:var(--ink-faint);
-    border-top:1px solid var(--rule);padding-top:14px;
-  }
-  .foot .meta{display:flex;gap:20px;flex-wrap:wrap}
-  .foot .meta span{position:relative}
-  .foot .meta span + span::before{
-    content:"/";margin-right:20px;color:var(--ink-faint);opacity:.5;
-  }
-  .foot .sig{
-    font-family:"Fraunces",serif;font-style:italic;font-weight:500;
-    font-variation-settings:"opsz" 14,"SOFT" 80;
-    font-size:13px;letter-spacing:0;text-transform:none;
-    color:var(--sienna-deep);
-  }
-  body.night .foot .sig{color:var(--sienna)}
-
   /* ===== Toast ===== */
   .toast{
     position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(80px);
@@ -476,143 +316,74 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   body.night .toast{background:var(--paper);color:var(--ink)}
 
-  /* ===== Entrance — staggered, restrained ===== */
-  .eyebrow,.status,.subtitle,.body-copy,.actions,.stats,.frame,.foot{
+  /* ===== Entrance ===== */
+  .marquee,.frame{
     opacity:0;
     animation:fadeUp .9s cubic-bezier(.22,1,.36,1) forwards;
   }
-  .eyebrow{animation-delay:.05s}
-  .status{animation-delay:.18s}
-  .subtitle{animation-delay:.42s}
-  .body-copy{animation-delay:.55s}
-  .actions{animation-delay:.68s}
-  .stats{animation-delay:.82s}
-  .frame{animation-delay:.32s}
-  .foot{animation-delay:.95s}
+  .marquee{animation-delay:.05s}
+  .frame{animation-delay:.32s;transform-origin:center}
   @keyframes fadeUp{
     0%{opacity:0;transform:translateY(18px)}
     100%{opacity:1;transform:translateY(0)}
   }
-  .frame{transform-origin:center}
 
   /* reduced motion */
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.01ms !important;transition-duration:.01ms !important}
   }
-
-  /* small screens: shrink the 418 a touch and stack stats horizontally tight */
-  @media (max-width:560px){
-    .stats{gap:0}
-    .stat{padding-right:14px;margin-right:14px;min-width:72px}
-    .stat .val{font-size:26px}
-    .actions .btn{padding:11px 16px;font-size:10px}
-  }
 </style>
 </head>
 <body>
 
+<button class="toggle" id="themeToggle" aria-label="切换昼夜模式">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+  <span id="themeLabel">夜间</span>
+</button>
+
 <div class="stage">
 
-  <!-- ===== Top bar ===== -->
-  <header class="topbar">
-    <div class="left">
-      <span class="brand">OrangeCat Camera Co.</span>
-      <span>Roll 04 / 04</span>
-    </div>
-    <div class="right">
-      <span class="status-tag">● HTTP 418</span>
-      <button class="toggle" id="themeToggle" aria-label="切换昼夜模式">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-        <span id="themeLabel">夜间</span>
-      </button>
-    </div>
+  <!-- ===== Studio marquee ===== -->
+  <header class="marquee">
+    <div class="sign">猫咪<span class="accent">照相馆</span></div>
+    <div class="sub">Cat Photo Studio</div>
+    <div class="rule"></div>
   </header>
 
-  <!-- ===== Main ===== -->
-  <main class="main">
-    <section class="copy">
-      <div class="eyebrow">
-        <span class="line"></span>
-        <span>Status</span>
-        <span class="dot"></span>
-        <span>I'm a teapot</span>
-      </div>
+  <!-- ===== Polaroid camera ===== -->
+  <section class="frame" id="frame" aria-label="拍立得相机">
+    <div class="rainbow" aria-hidden="true"></div>
 
-      <h1 class="status" aria-label="HTTP 418">
-        <span class="n">4</span><span class="n">1</span><span class="n">8</span>
-      </h1>
-
-      <p class="subtitle">暗房冲洗中 <span class="am">·</span> Darkroom in session</p>
-
-      <p class="body-copy">
-        橘猫店员正在<em>整理底片</em>，相机店暂时打烊。
-        网站进入 <em>418</em> 维护态，请稍后再访 ——
-        也可以摸摸猫，或按一下快门留个纪念。
-      </p>
-
-      <div class="actions">
-        <button class="btn" id="petBtn" aria-label="摸摸橘猫">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-          摸猫 <span class="count" id="petCount">0</span>
-        </button>
-        <button class="btn ghost" id="shutterBtn" aria-label="按下快门">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          拍照
-        </button>
-      </div>
-
-      <div class="stats">
-        <div class="stat"><div class="label">打扰 / Visits</div><div class="val" id="statVisits">0</div></div>
-        <div class="stat"><div class="label">胶片 / Frames</div><div class="val" id="statPhotos">0</div></div>
-      </div>
-    </section>
-
-    <!-- ===== Polaroid camera ===== -->
-    <section class="frame" id="frame" aria-label="拍立得相机">
-      <div class="rainbow" aria-hidden="true"></div>
-
-      <div class="cam-top">
-        <div class="vf" aria-hidden="true"></div>
-        <div class="flash-lamp" aria-hidden="true"></div>
-        <div class="brand">ORANGECAT · 418</div>
-        <button class="shutter" id="shutterTop" aria-label="快门" type="button"></button>
-      </div>
-
-      <div class="lens" id="lens">
-        <div class="lens-inner" id="lensInner">
-          <img class="cat-img" id="catImgA" alt="橘猫店员" />
-          <img class="cat-img" id="catImgB" alt="橘猫店员" />
-        </div>
-        <div class="halftone" aria-hidden="true"></div>
-        <div class="flash" id="flash"></div>
-        <div class="bubble" id="bubble"></div>
-      </div>
-
-      <div class="print-slot" aria-hidden="true"></div>
-    </section>
-
-    <!-- printed photo lives in the document flow, below the camera -->
-    <div class="photo-out" id="photoOut">
-      <div class="photo-card">
-        <div class="pic">
-          <img id="photoImg" alt="刚拍的照片" />
-          <div class="develop" aria-hidden="true"></div>
-        </div>
-        <div class="cap">FILM #<span id="photoNum">001</span> · 418</div>
-        <button class="save-btn" id="saveBtn" type="button">保存</button>
-      </div>
+    <div class="cam-top">
+      <div class="vf" aria-hidden="true"></div>
+      <div class="flash-lamp" aria-hidden="true"></div>
+      <div class="brand">猫咪照相馆</div>
+      <button class="shutter" id="shutterTop" aria-label="快门" type="button"></button>
     </div>
-  </main>
 
-  <!-- ===== Footer ===== -->
-  <footer class="foot">
-    <div class="meta">
-      <span>© OrangeCat Camera Co.</span>
-      <span>No ETA</span>
-      <span>Maintained by Cat</span>
+    <div class="lens" id="lens">
+      <div class="lens-inner" id="lensInner">
+        <img class="cat-img" id="catImgA" alt="橘猫" />
+        <img class="cat-img" id="catImgB" alt="橘猫" />
+      </div>
+      <div class="halftone" aria-hidden="true"></div>
+      <div class="flash" id="flash"></div>
     </div>
-    <div class="sig">— 店员橘猫，值班中</div>
-  </footer>
+
+    <div class="print-slot" aria-hidden="true"></div>
+  </section>
+
+  <!-- printed photo lives in the document flow, below the camera -->
+  <div class="photo-out" id="photoOut">
+    <div class="photo-card">
+      <div class="pic">
+        <img id="photoImg" alt="刚拍的照片" />
+        <div class="develop" aria-hidden="true"></div>
+      </div>
+      <div class="cap">FILM #<span id="photoNum">001</span> · 猫咪照相馆</div>
+      <button class="save-btn" id="saveBtn" type="button">保存</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast">已记录</div>
@@ -623,23 +394,19 @@
 
   // ===== State =====
   var state = {
-    pets: 0,
     photos: 0,
-    visits: 0,
     night: false
   };
 
   // ===== Cat image API (Cloudflare ImgBed /random?dir=backimg) =====
   var CAT_API = "https://img.hdx.dpdns.org/random?dir=backimg";
   var CAT_BASE = "https://img.hdx.dpdns.org";
-  // fetch a random cat image URL (JSON {url:"/file/backimg/xxx.webp"}), resolve to full URL
   function fetchCatUrl(){
     return fetch(CAT_API + "&r=" + Math.random().toString(36).slice(2))
       .then(function(r){ return r.json(); })
       .then(function(d){ return d.url ? (CAT_BASE + d.url) : null; })
       .catch(function(){ return null; });
   }
-  // prefetch one image end-to-end: fetch JSON + preload <img> until onload → resolve full URL
   function prefetchCat(){
     return fetchCatUrl().then(function(fullUrl){
       if(!fullUrl) return null;
@@ -651,13 +418,11 @@
       });
     });
   }
-  // prefetch pool: keep one image always warming up so the next swap is instant
   var next = prefetchCat();
 
   var $ = function(id){ return document.getElementById(id); };
   var catA = $("catImgA"), catB = $("catImgB");
-  var active = catA;            // currently visible cat image
-  var bubble = $("bubble");
+  var active = catA;
   var flash = $("flash");
   var photoOut = $("photoOut");
   var photoImg = $("photoImg");
@@ -686,23 +451,6 @@
     o.connect(g); g.connect(ctx.destination);
     o.start(); o.stop(ctx.currentTime+dur);
   }
-  function purrSound(){
-    var ctx = ac(); if(!ctx) return;
-    var o = ctx.createOscillator();
-    var g = ctx.createGain();
-    o.type = "triangle";
-    o.frequency.setValueAtTime(80, ctx.currentTime);
-    var lfo = ctx.createOscillator();
-    var lfoG = ctx.createGain();
-    lfo.frequency.value = 25;
-    lfoG.gain.value = 0.035;
-    lfo.connect(lfoG); lfoG.connect(g.gain);
-    g.gain.setValueAtTime(0.05, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.8);
-    o.connect(g); g.connect(ctx.destination);
-    o.start(); lfo.start();
-    o.stop(ctx.currentTime+0.8); lfo.stop(ctx.currentTime+0.8);
-  }
   function shutterSound(){
     var ctx = ac(); if(!ctx) return;
     tone(1200, 0.02, "square", 0.09);
@@ -719,23 +467,6 @@
     toastTimer = setTimeout(function(){ toast.classList.remove("show"); }, 1800);
   }
 
-  // ===== Bubble =====
-  var bubbleTimer = null;
-  function say(text){
-    bubble.textContent = text;
-    bubble.classList.add("show");
-    clearTimeout(bubbleTimer);
-    bubbleTimer = setTimeout(function(){ bubble.classList.remove("show"); }, 2200);
-  }
-
-  // ===== Meows =====
-  var meows = [
-    "喵～","喵呜…","咕噜咕噜…","别拍了啦","再摸摸我",
-    "我也要加班？","胶卷用完了","喵！","店员已就位",
-    "请勿打扰","今天不营业","418 也是猫","摸到 belly 了！"
-  ];
-  function randomMeow(){ return meows[Math.floor(Math.random()*meows.length)]; }
-
   // ===== Theme toggle =====
   function setTheme(night){
     state.night = night;
@@ -751,13 +482,11 @@
   // ===== Cat image rotation (crossfade every ~7s, uses prefetch pool) =====
   var rotateTimer = null;
   function loadCat(){
-    // consume the warmed-up image; immediately start prefetching the next one
     var consumed = next;
     next = prefetchCat();
     consumed.then(function(fullUrl){
-      if(!fullUrl) return; // keep current image on failure
+      if(!fullUrl) return;
       var inactive = active === catA ? catB : catA;
-      // already preloaded → onload fires synchronously (cache hit)
       inactive.onload = function(){
         inactive.classList.add("loaded");
         var prev = active;
@@ -770,11 +499,8 @@
       inactive.src = fullUrl;
     });
   }
-  // initial load
   loadCat();
-  // rotate every 7 seconds
   rotateTimer = setInterval(loadCat, 7000);
-  // pause rotation when tab hidden, resume when visible
   document.addEventListener("visibilitychange", function(){
     if(document.hidden){
       clearInterval(rotateTimer); rotateTimer = null;
@@ -784,72 +510,29 @@
     }
   });
 
-  // ===== Hearts =====
-  function spawnHeart(x, y){
-    var h = document.createElement("div");
-    h.className = "heart";
-    h.innerHTML = '<svg viewBox="0 0 24 24" fill="#C8531C" stroke="#1A1410" stroke-width="1.2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
-    h.style.left = (x-7)+"px";
-    h.style.top = (y-7)+"px";
-    h.style.setProperty("--dx", (Math.random()*50-25)+"px");
-    document.body.appendChild(h);
-    setTimeout(function(){ h.remove(); }, 1400);
-  }
-
-  // ===== Pet the cat =====
-  function petCat(originEvent){
-    state.pets++;
-    $("petCount").textContent = state.pets;
-    state.visits++;
-    updateStats();
-    // bounce the currently visible image
-    active.classList.add("bouncing");
-    setTimeout(function(){ active.classList.remove("bouncing"); }, 500);
-    purrSound();
-
-    var rect = active.getBoundingClientRect();
-    var cx, cy;
-    if(originEvent && originEvent.clientX){
-      cx = originEvent.clientX;
-      cy = originEvent.clientY;
-    } else {
-      cx = rect.left + rect.width/2;
-      cy = rect.top + rect.height*0.4;
-    }
-    for(var i=0;i<3;i++){
-      (function(i){ setTimeout(function(){ spawnHeart(cx, cy); }, i*120); })(i);
-    }
-
-    if(state.pets === 1) say("咕噜咕噜…");
-    else if(state.pets === 5) say("再来！再来！");
-    else if(state.pets === 10) say("摸了10下了…");
-    else if(state.pets === 20) say("店员要秃了 😿");
-    else if(state.pets % 15 === 0) say("你不上班吗？");
-    else say(randomMeow());
-  }
+  // ===== Click on lens = subtle bounce (no meow, no hearts) =====
   [catA, catB].forEach(function(el){
-    el.addEventListener("click", function(e){ e.stopPropagation(); petCat(e); });
+    el.addEventListener("click", function(){
+      active.classList.add("bouncing");
+      setTimeout(function(){ active.classList.remove("bouncing"); }, 500);
+    });
   });
-  $("petBtn").addEventListener("click", function(){ petCat(); });
 
   // ===== Shutter / take photo =====
   var photoHideTimer = null;
   var photoDevelopTimer = null;
-  var currentPhotoUrl = null; // last printed photo URL, for save
+  var currentPhotoUrl = null;
   var scrollTimer = null;
   function takePhoto(){
-    // clear pending timers
     if(photoHideTimer){ clearTimeout(photoHideTimer); photoHideTimer = null; }
     if(photoDevelopTimer){ clearTimeout(photoDevelopTimer); photoDevelopTimer = null; }
     if(scrollTimer){ clearInterval(scrollTimer); scrollTimer = null; }
 
-    // capture the image currently shown in the lens
     var lensUrl = active.src;
     currentPhotoUrl = lensUrl;
     photoImg.src = lensUrl;
 
     state.photos++;
-    updateStats();
     photoNum.textContent = String(state.photos).padStart(3,"0");
 
     shutterSound();
@@ -857,18 +540,14 @@
     void flash.offsetWidth;
     flash.classList.add("fire");
 
-    // reset the photo card to its undeveloped state, force reflow so the
-    // develop animation replays every time (not just the first)
     photoOut.classList.remove("printing");
     photoOut.classList.remove("developed");
-    void photoOut.offsetWidth; // reflow
+    void photoOut.offsetWidth; // reflow so develop animation replays
 
-    // small delay so flash precedes the print emerging
     setTimeout(function(){
       photoOut.classList.add("printing");
       showToast("已拍摄 · FILM #"+String(state.photos).padStart(3,"0"));
 
-      // sync-scroll: keep the emerging photo in view as it slides out
       var start = window.pageYOffset;
       var rect = photoOut.getBoundingClientRect();
       var viewportH = window.innerHeight;
@@ -877,39 +556,33 @@
         var duration = 1300, t0 = Date.now();
         scrollTimer = setInterval(function(){
           var p = Math.min(1, (Date.now()-t0)/duration);
-          var ease = 1 - Math.pow(1-p, 3); // easeOutCubic
+          var ease = 1 - Math.pow(1-p, 3);
           window.scrollTo(0, start + (desired - start) * ease);
           if(p >= 1){ clearInterval(scrollTimer); scrollTimer = null; }
         }, 16);
       }
 
-      // lock developed state once the develop animation has played (~6.8s)
       photoDevelopTimer = setTimeout(function(){
         photoOut.classList.add("developed");
         photoDevelopTimer = null;
       }, 6800);
 
-      // auto-retract after a while → old photo disappears
       photoHideTimer = setTimeout(function(){
         photoOut.classList.remove("printing");
         photoHideTimer = null;
       }, 14000);
     }, 200);
-
-    say("咔嚓！");
   }
-  $("shutterBtn").addEventListener("click", takePhoto);
   $("shutterTop").addEventListener("click", function(e){ e.stopPropagation(); takePhoto(); });
 
   // ===== Save photo =====
   $("saveBtn").addEventListener("click", function(e){
     e.stopPropagation();
     if(!currentPhotoUrl){ showToast("照片还在显影…"); return; }
-    // fetch the image as blob and trigger download
     fetch(currentPhotoUrl).then(function(r){ return r.blob(); }).then(function(blob){
       var a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = "418-cat-FILM-" + String(state.photos).padStart(3,"0") + ".jpg";
+      a.download = "cat-photo-FILM-" + String(state.photos).padStart(3,"0") + ".jpg";
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -920,28 +593,13 @@
     });
   });
 
-  // ===== Stats =====
-  function updateStats(){
-    $("statVisits").textContent = state.visits;
-    $("statPhotos").textContent = state.photos;
-  }
-
   // ===== Keyboard shortcuts =====
   document.addEventListener("keydown", function(e){
     if(e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
     var k = e.key.toLowerCase();
-    if(k === "p"){ petCat(); }
-    else if(k === "c"){ takePhoto(); }
+    if(k === "c" || k === " "){ e.preventDefault(); takePhoto(); }
     else if(k === "t"){ setTheme(!state.night); showToast(state.night?"切换至夜间模式":"切换至白天模式"); }
   });
-
-  // ===== First visit =====
-  state.visits = 1;
-  updateStats();
-  setTimeout(function(){
-    say("欢迎光临");
-    setTimeout(function(){ bubble.classList.remove("show"); }, 2400);
-  }, 1400);
 
   // Pre-init audio on first interaction
   function initAudioOnce(){
