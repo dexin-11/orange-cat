@@ -230,6 +230,7 @@
     position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
     opacity:0;transition:opacity 1s ease,transform .5s cubic-bezier(.34,1.56,.64,1);
     cursor:pointer;background:#1A1714;
+    filter:var(--film-filter,none);
   }
   .lens-inner .cat-img.loaded{opacity:1}
   .lens-inner .cat-img.bouncing{transform:scale(1.04)}
@@ -307,7 +308,7 @@
   }
   .photo-out.printing .photo-card .pic img,
   .photo-out.developed .photo-card .pic img{
-    filter:blur(0) brightness(1.02) sepia(.08) saturate(.96) contrast(1.05);
+    filter:var(--film-filter,blur(0) brightness(1.02) sepia(.08) saturate(.96) contrast(1.05));
   }
   .photo-card .pic::before{
     content:"";position:absolute;inset:6px;border:1px solid rgba(255,255,255,.25);
@@ -401,6 +402,7 @@
       radial-gradient(circle at 30% 35%,#F2C94C 0 3px,transparent 4px),
       radial-gradient(circle at 70% 65%,#EB5757 0 3px,transparent 4px);
   }
+  .chip-swatch.s-joycam{background:linear-gradient(170deg,#D8DAE0 0%,#8A8E96 100%)}
 
   /* ===== Skin: Fujifilm instax mini 40/41 — silver top + black leather ===== */
   .frame.skin-instax{
@@ -598,11 +600,43 @@
   .frame.skin-limoland .lens-mirror{display:block;width:14px;height:11px;top:6px;right:8px;left:auto;
     background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(200,180,160,.55) 60%,rgba(140,120,100,.35))}
 
+  /* ===== Skin: Polaroid JOYCAM — 太空银 + 硬朗线条 + 侧边手柄 ===== */
+  .frame.skin-joycam{
+    --cam-body:linear-gradient(170deg,#D8DAE0 0%,#B8BCC4 40%,#8A8E96 100%);
+    --cam-body-night:linear-gradient(170deg,#4A4E56 0%,#34383E 40%,#1A1E22 100%);
+    --stripe:linear-gradient(90deg,#6A6E76,#A8ACB4,#6A6E76);
+    --brand:#1A1E22;--brand-night:#D8DAE0;
+    --shutter:radial-gradient(circle at 35% 30%,#5A5E66,#2A2E34 60%,#0A0E12);
+    --ring:#1A1E22;--ring-night:#000;
+    --frame-radius:6px 6px 4px 4px;
+    --lens-ratio:4/2.7;--lens-margin-x:30px;--lens-radius:6px;
+  }
+  /* 太空银金属拉丝纹理 */
+  .frame.skin-joycam::after{
+    content:"";position:absolute;inset:0;border-radius:6px 6px 4px 4px;
+    pointer-events:none;z-index:1;opacity:.4;
+    background-image:repeating-linear-gradient(90deg,
+      rgba(255,255,255,.06) 0 1px,transparent 1px 3px);
+  }
+  body.night .frame.skin-joycam::after{opacity:.2}
+  /* 侧边手柄 (右侧凸起) + JOYCAM 银色标牌 */
+  .frame.skin-joycam::before{
+    content:"";position:absolute;right:-8px;top:34%;bottom:8%;width:18px;z-index:2;
+    border-radius:3px;pointer-events:none;
+    background:linear-gradient(90deg,#A8ACB4,#6A6E76);
+    box-shadow:inset -2px 0 2px rgba(0,0,0,.3),1px 0 2px rgba(0,0,0,.2);
+  }
+  .frame.skin-joycam .lens-badge{display:block}
+  .frame.skin-joycam .lens-badge::after{content:"JOYCAM"}
+  .frame.skin-joycam .lens-mirror{display:block;width:14px;height:11px;top:6px;left:6px;
+    background:linear-gradient(135deg,rgba(255,255,255,.85),rgba(180,200,220,.5) 60%,rgba(120,140,160,.3))}
+
   /* ===== Rainbow stripe top radius matches each skin's --frame-radius ===== */
   .frame.skin-instax .rainbow{border-radius:22px 22px 0 0}
   .frame.skin-cam96 .rainbow{border-radius:18px 18px 0 0}
   .frame.skin-noir .rainbow{border-radius:10px 10px 0 0}
   .frame.skin-limoland .rainbow{border-radius:24px 24px 0 0}
+  .frame.skin-joycam .rainbow{border-radius:6px 6px 0 0}
 
   /* ===== Photo frame skin variants ===== */
   /* classic: Polaroid OneStep — rainbow stripe on top edge of photo */
@@ -713,6 +747,38 @@
   }
   .photo-out.skin-limoland .photo-card .cap{color:#1A1410}
 
+  /* joycam: 太空银相纸 + 银色角标 + 银色顶条 */
+  .photo-out.skin-joycam .photo-card{
+    background:linear-gradient(180deg,#E8EAEE 0%,#D0D4DC 100%);
+    padding:18px 18px 48px;
+    box-shadow:0 12px 28px rgba(0,0,0,.24),0 0 0 1px #6A6E76 inset;
+  }
+  body.night .photo-out.skin-joycam .photo-card{
+    background:linear-gradient(180deg,#1E1914 0%,#2A2A2E 100%);
+  }
+  .photo-out.skin-joycam .photo-card .pic{
+    border:1px solid rgba(0,0,0,.12);
+  }
+  .photo-out.skin-joycam .photo-card .pic::before{
+    border-color:rgba(255,255,255,.2);
+  }
+  .photo-out.skin-joycam .photo-card .pic::after{
+    background:
+      linear-gradient(#6A6E76,#6A6E76) left top/12px 2px no-repeat,
+      linear-gradient(#6A6E76,#6A6E76) left top/2px 12px no-repeat,
+      linear-gradient(#6A6E76,#6A6E76) right top/12px 2px no-repeat,
+      linear-gradient(#6A6E76,#6A6E76) right top/2px 12px no-repeat,
+      linear-gradient(#6A6E76,#6A6E76) left bottom/12px 2px no-repeat,
+      linear-gradient(#6A6E76,#6A6E76) left bottom/2px 12px no-repeat,
+      linear-gradient(#6A6E76,#6A6E76) right bottom/12px 2px no-repeat,
+      linear-gradient(#6A6E76,#6A6E76) right bottom/2px 12px no-repeat;
+  }
+  .photo-out.skin-joycam .photo-card::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:4px;z-index:7;
+    background:linear-gradient(90deg,#6A6E76,#A8ACB4,#6A6E76);
+  }
+  .photo-out.skin-joycam .photo-card .cap{color:#1A1E22;letter-spacing:.2em}
+
   /* ===== Fullscreen photo mode — frosted backdrop, camera hidden ===== */
   body.photo-mode .frame{
     opacity:0;visibility:hidden;
@@ -755,6 +821,91 @@
   }
   .photo-close:hover{background:rgba(255,255,255,.22);transform:scale(1.08)}
   body.photo-mode .photo-close{display:flex}
+
+  /* ===== Film grain + vignette overlays (driven by --film-grain / --film-vignette) ===== */
+  .film-grain,.film-vignette{
+    position:absolute;inset:0;pointer-events:none;z-index:7;
+    opacity:0;transition:opacity 5s ease 1.2s;
+  }
+  .photo-out.printing .film-grain,
+  .photo-out.printing .film-vignette,
+  .photo-out.developed .film-grain,
+  .photo-out.developed .film-vignette{opacity:1}
+  .film-grain{
+    opacity:var(--grain-show,0);
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+    background-size:160px 160px;
+    mix-blend-mode:overlay;
+  }
+  .photo-out.printing .film-grain,
+  .photo-out.developed .film-grain{
+    opacity:var(--grain-show,0);
+    animation:grainShift .5s steps(2) infinite;
+  }
+  @keyframes grainShift{
+    0%{transform:translate(0,0)}
+    50%{transform:translate(-4px,3px)}
+    100%{transform:translate(3px,-2px)}
+  }
+  .film-vignette{
+    background:radial-gradient(ellipse at center,
+      transparent 40%,
+      rgba(0,0,0,calc(var(--vignette-strength,0) * 0.7)) 100%);
+  }
+
+  /* ===== Advanced settings panel ===== */
+  .adv-toggle{
+    display:inline-flex;align-items:center;gap:6px;
+    border:1px solid var(--rule-strong);background:var(--paper);
+    padding:6px 12px;cursor:pointer;
+    font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ink-soft);
+    transition:all .25s ease;
+  }
+  .adv-toggle:hover{border-color:var(--ink);color:var(--ink)}
+  .adv-toggle .arrow{transition:transform .25s ease;display:inline-block}
+  .adv-panel{
+    max-height:0;overflow:hidden;
+    transition:max-height .4s cubic-bezier(.22,1,.36,1);
+    width:100%;max-width:440px;margin:0 auto;
+  }
+  .adv-panel.open{max-height:340px}
+  .adv-inner{
+    border:1px solid var(--rule-strong);background:var(--cream);
+    padding:16px 18px;margin-top:8px;
+    display:flex;flex-direction:column;gap:14px;
+  }
+  body.night .adv-inner{background:var(--paper-deep)}
+  .adv-row{display:flex;flex-direction:column;gap:6px}
+  .adv-row .adv-label{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--ink-soft);
+  }
+  .adv-row .adv-label .val{color:var(--sienna);font-weight:700}
+  .adv-row input[type="range"]{
+    -webkit-appearance:none;appearance:none;width:100%;height:3px;
+    background:var(--rule-strong);outline:none;cursor:pointer;
+  }
+  .adv-row input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;
+    background:var(--sienna);border:2px solid var(--paper);
+    box-shadow:0 1px 3px rgba(0,0,0,.3);cursor:pointer;
+  }
+  .adv-row input[type="range"]::-moz-range-thumb{
+    width:14px;height:14px;border-radius:50%;background:var(--sienna);
+    border:2px solid var(--paper);cursor:pointer;
+  }
+  .adv-film-name{
+    font-family:"Fraunces",serif;font-style:italic;font-weight:600;
+    font-size:14px;color:var(--ink);letter-spacing:.02em;
+  }
+  .adv-reset{
+    align-self:flex-start;background:transparent;border:none;cursor:pointer;
+    font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ink-faint);padding:2px 0;
+  }
+  .adv-reset:hover{color:var(--sienna)}
 </style>
 </head>
 <body>
@@ -792,6 +943,32 @@
     <button class="style-chip" type="button" data-skin="limoland" title="Leica SOFORT LimoLand 笑脸">
       <span class="chip-swatch s-limoland"></span><span class="chip-name">LimoLand</span>
     </button>
+    <button class="style-chip" type="button" data-skin="joycam" title="Polaroid JOYCAM 太空银">
+      <span class="chip-swatch s-joycam"></span><span class="chip-name">太空银</span>
+    </button>
+  </div>
+
+  <!-- ===== Advanced film settings ===== -->
+  <button class="adv-toggle" id="advToggle" type="button" aria-expanded="false" aria-controls="advPanel">
+    <span class="arrow">▸</span><span>高级设置</span>
+  </button>
+  <div class="adv-panel" id="advPanel" role="region" aria-label="胶片参数">
+    <div class="adv-inner">
+      <div class="adv-film-name" id="advFilmName">Classic Chrome · 经典正片</div>
+      <div class="adv-row">
+        <div class="adv-label"><span>颗粒 Grain</span><span class="val" id="grainVal">0</span></div>
+        <input type="range" id="grainSlider" min="0" max="100" value="0" />
+      </div>
+      <div class="adv-row">
+        <div class="adv-label"><span>暗角 Vignette</span><span class="val" id="vignetteVal">0</span></div>
+        <input type="range" id="vignetteSlider" min="0" max="100" value="0" />
+      </div>
+      <div class="adv-row">
+        <div class="adv-label"><span>褪色 Fade</span><span class="val" id="fadeVal">0</span></div>
+        <input type="range" id="fadeSlider" min="0" max="100" value="0" />
+      </div>
+      <button class="adv-reset" id="advReset" type="button">重置参数</button>
+    </div>
   </div>
 
   <!-- ===== Polaroid camera ===== -->
@@ -825,6 +1002,8 @@
       <div class="pic">
         <img id="photoImg" alt="刚拍的照片" />
         <div class="develop" aria-hidden="true"></div>
+        <div class="film-grain" aria-hidden="true"></div>
+        <div class="film-vignette" aria-hidden="true"></div>
       </div>
       <div class="cap" id="photoCap">FILM #001 · 猫咪照相馆</div>
       <button class="save-btn" id="saveBtn" type="button">保存</button>
@@ -877,6 +1056,16 @@
   var photoImg = $("photoImg");
   var photoClose = $("photoClose");
   var toast = $("toast");
+  var advToggle = $("advToggle");
+  var advPanel = $("advPanel");
+  var advFilmName = $("advFilmName");
+  var grainSlider = $("grainSlider");
+  var vignetteSlider = $("vignetteSlider");
+  var fadeSlider = $("fadeSlider");
+  var grainVal = $("grainVal");
+  var vignetteVal = $("vignetteVal");
+  var fadeVal = $("fadeVal");
+  var advReset = $("advReset");
 
   // ===== Audio (Web Audio API) =====
   var audioCtx = null;
@@ -928,16 +1117,39 @@
     showToast(state.night ? "切换至夜间模式" : "切换至白天模式");
   });
 
-  // ===== Camera skin switcher =====
-  var SKINS = ["classic","instax","cam96","noir","limoland"];
-  var SKIN_NAMES = {classic:"经典彩虹",instax:"instax 银黑",cam96:"96 Cam 撞色",noir:"全黑 NOIR",limoland:"LimoLand 笑脸"};
-  var CAM_BRAND = {classic:"猫咪照相馆",instax:"instax",cam96:"96 CAM",noir:"SQ40",limoland:"SOFORT"};
-  var PHOTO_BRAND = {classic:"猫咪照相馆",instax:"instax mini 40",cam96:"96 CAM",noir:"SQ40",limoland:"SOFORT"};
+  // ===== Camera skin switcher + bound film simulation =====
+  var SKINS = ["classic","instax","cam96","noir","limoland","joycam"];
+  var SKIN_NAMES = {classic:"经典彩虹",instax:"永恒银黑",cam96:"炫彩霓虹",noir:"经典全黑",limoland:"艺术联名",joycam:"太空银"};
+  var CAM_BRAND = {classic:"猫咪照相馆",instax:"instax",cam96:"96 CAM",noir:"SQ40",limoland:"SOFORT",joycam:"JOYCAM"};
+  var PHOTO_BRAND = {classic:"猫咪照相馆",instax:"instax mini 40",cam96:"96 CAM",noir:"SQ40",limoland:"SOFORT",joycam:"JOYCAM"};
+  // 每种相机皮肤绑定的胶片模拟（参考 grainlab 调参）
+  // film: 显示名 / filter: 预览与保存共用的 CSS filter / grain/vignette/fade: 默认值(0-100)
+  var FILM = {
+    classic:{name:"Provia · 标准",filter:"contrast(1.05) saturate(1.0) brightness(1.02)",grain:8,vignette:10,fade:5},
+    instax:{name:"Classic Chrome · 经典正片",filter:"contrast(0.92) saturate(0.82) sepia(0.10) hue-rotate(-8deg) brightness(1.02)",grain:18,vignette:18,fade:15},
+    cam96:{name:"Nostalgic Negative · 怀旧负片",filter:"contrast(1.08) saturate(1.18) sepia(0.14) hue-rotate(-10deg) brightness(1.05)",grain:22,vignette:25,fade:12},
+    noir:{name:"ACROS · 黑白颗粒",filter:"grayscale(1) contrast(1.55)",grain:55,vignette:38,fade:8},
+    joycam:{name:"ETERNA · 电影胶片",filter:"contrast(0.84) saturate(0.78) hue-rotate(3deg) brightness(0.98)",grain:30,vignette:22,fade:28},
+    limoland:{name:"Reala Ace · 标准负片",filter:"contrast(1.12) saturate(1.15) brightness(1.03)",grain:15,vignette:15,fade:10}
+  };
   var frameEl = $("frame");
   var styleBar = $("styleBar");
   var camBrand = $("camBrand");
   var photoCap = $("photoCap");
   var currentSkin = "classic";
+  // 当前生效的胶片参数（可被高级设置覆盖）
+  var filmParams = {grain:0,vignette:0,fade:0};
+  function applyFilmFilter(){
+    var f = FILM[currentSkin] || FILM.classic;
+    // fade 通过降低对比+提亮黑场近似（叠加在 CSS filter 上）
+    var fadeAdj = filmParams.fade > 0
+      ? " contrast(" + (1 - filmParams.fade*0.003).toFixed(3) + ") brightness(" + (1 + filmParams.fade*0.002).toFixed(3) + ")"
+      : "";
+    var filterStr = f.filter + fadeAdj;
+    document.documentElement.style.setProperty("--film-filter", filterStr);
+    document.documentElement.style.setProperty("--grain-show", (filmParams.grain/100*0.55).toFixed(3));
+    document.documentElement.style.setProperty("--vignette-strength", (filmParams.vignette/100).toFixed(3));
+  }
   function applySkin(name){
     if(SKINS.indexOf(name) < 0) name = "classic";
     currentSkin = name;
@@ -949,6 +1161,15 @@
       chips[i].classList.toggle("is-active", chips[i].getAttribute("data-skin") === name);
     }
     if(camBrand) camBrand.textContent = CAM_BRAND[name] || "猫咪照相馆";
+    // 切换皮肤时重置为该胶片的默认参数，再用已保存的自定义参数覆盖
+    var f = FILM[name] || FILM.classic;
+    filmParams.grain = f.grain;
+    filmParams.vignette = f.vignette;
+    filmParams.fade = f.fade;
+    loadFilmParams(name);
+    syncAdvUI();
+    applyFilmFilter();
+    if(advFilmName) advFilmName.textContent = f.name;
   }
   function switchSkin(dir){
     var idx = SKINS.indexOf(currentSkin);
@@ -982,6 +1203,51 @@
     try{ saved = localStorage.getItem("cat-skin"); }catch(e){}
     applySkin(saved || "classic");
   })();
+
+  // ===== Advanced film settings panel =====
+  function syncAdvUI(){
+    if(grainSlider){ grainSlider.value = filmParams.grain; grainVal.textContent = filmParams.grain; }
+    if(vignetteSlider){ vignetteSlider.value = filmParams.vignette; vignetteVal.textContent = filmParams.vignette; }
+    if(fadeSlider){ fadeSlider.value = filmParams.fade; fadeVal.textContent = filmParams.fade; }
+  }
+  function persistFilmParams(){
+    try{
+      localStorage.setItem("cat-film-"+currentSkin,
+        JSON.stringify(filmParams));
+    }catch(e){}
+  }
+  function loadFilmParams(skin){
+    try{
+      var raw = localStorage.getItem("cat-film-"+skin);
+      if(raw){
+        var p = JSON.parse(raw);
+        if(p && typeof p.grain === "number"){ filmParams.grain = p.grain; filmParams.vignette = p.vignette; filmParams.fade = p.fade; return true; }
+      }
+    }catch(e){}
+    return false;
+  }
+  advToggle.addEventListener("click", function(){
+    var open = advPanel.classList.toggle("open");
+    advToggle.setAttribute("aria-expanded", open ? "true" : "false");
+    advToggle.querySelector(".arrow").textContent = open ? "▾" : "▸";
+  });
+  function bindSlider(slider, valEl, key){
+    slider.addEventListener("input", function(){
+      filmParams[key] = parseInt(slider.value, 10) || 0;
+      valEl.textContent = filmParams[key];
+      applyFilmFilter();
+      persistFilmParams();
+    });
+  }
+  bindSlider(grainSlider, grainVal, "grain");
+  bindSlider(vignetteSlider, vignetteVal, "vignette");
+  bindSlider(fadeSlider, fadeVal, "fade");
+  advReset.addEventListener("click", function(){
+    var f = FILM[currentSkin] || FILM.classic;
+    filmParams.grain = f.grain; filmParams.vignette = f.vignette; filmParams.fade = f.fade;
+    syncAdvUI(); applyFilmFilter(); persistFilmParams();
+    showToast("已重置为默认参数");
+  });
 
   // ===== Swipe left/right on the camera to switch skins =====
   (function(){
@@ -1065,6 +1331,7 @@
   var photoFsTimer = null;
   var currentPhotoUrl = null;
   var currentPhotoSkin = "classic";
+  var currentPhotoFilm = null;
   function takePhoto(){
     if(photoHideTimer){ clearTimeout(photoHideTimer); photoHideTimer = null; }
     if(photoDevelopTimer){ clearTimeout(photoDevelopTimer); photoDevelopTimer = null; }
@@ -1073,6 +1340,11 @@
     var lensUrl = active.src;
     currentPhotoUrl = lensUrl;
     currentPhotoSkin = currentSkin;
+    // 快照拍摄时的胶片参数（避免之后调参影响已拍照片的保存）
+    currentPhotoFilm = {
+      filter:(FILM[currentSkin]||FILM.classic).filter,
+      grain:filmParams.grain, vignette:filmParams.vignette, fade:filmParams.fade
+    };
     photoImg.src = lensUrl;
 
     state.photos++;
@@ -1202,7 +1474,8 @@
         instax:[14,14,54],
         cam96:[16,16,48],
         noir:[18,18,48],
-        limoland:[18,18,54]
+        limoland:[18,18,54],
+        joycam:[18,22,48]
       };
       var p = pads[skin] || [16,16,44];
       var padX = Math.round(p[0] * scale);
@@ -1224,28 +1497,66 @@
         ctx.fillStyle = grad;
       } else if(skin === "noir"){
         ctx.fillStyle = "#0F0F12";
-      } else if(skin === "instax"){
+      } else if(skin === "instax" || skin === "limoland"){
         ctx.fillStyle = "#FFFFFF";
-      } else if(skin === "limoland"){
-        ctx.fillStyle = "#FFFFFF";
+      } else if(skin === "joycam"){
+        var jg = ctx.createLinearGradient(0, 0, 0, paperH);
+        jg.addColorStop(0, "#E8EAEE"); jg.addColorStop(1, "#D0D4DC");
+        ctx.fillStyle = jg;
       } else {
         ctx.fillStyle = "#F7F1E6";
       }
       ctx.fillRect(0, 0, paperW, paperH);
 
-      // 2. 猫图（object-fit:cover）+ 按皮肤的胶片滤镜
+      // 2. 猫图（object-fit:cover）+ 拍摄时绑定的胶片滤镜（含 fade 近似）
+      var film = currentPhotoFilm || {filter:FILM[skin]?FILM[skin].filter:"",grain:0,vignette:0,fade:0};
+      var fadeAdj = film.fade > 0
+        ? " contrast(" + (1 - film.fade*0.003).toFixed(3) + ") brightness(" + (1 + film.fade*0.002).toFixed(3) + ")"
+        : "";
       ctx.save();
       ctx.beginPath();
       ctx.rect(ix, iy, imgW, imgH);
       ctx.clip();
-      if(isSquare){
-        ctx.filter = "brightness(0.95) saturate(0.7) contrast(1.1)";
-      } else {
-        ctx.filter = "brightness(1.02) sepia(0.08) saturate(0.96) contrast(1.05)";
-      }
+      ctx.filter = (film.filter || "brightness(1.02) contrast(1.05)") + fadeAdj;
       drawCover(ctx, im, ix, iy, imgW, imgH);
       ctx.filter = "none";
       ctx.restore();
+
+      // 2b. 颗粒 Grain — 在图片区域内叠加随机噪点（overlay 混合）
+      if(film.grain > 0){
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(ix, iy, imgW, imgH);
+        ctx.clip();
+        ctx.globalAlpha = film.grain / 100 * 0.5;
+        ctx.globalCompositeOperation = "overlay";
+        var gn = Math.floor(imgW * imgH / 220);
+        for(var gi=0; gi<gn; gi++){
+          var gx = ix + Math.random()*imgW;
+          var gy = iy + Math.random()*imgH;
+          var gv = Math.floor(Math.random()*255);
+          ctx.fillStyle = "rgb("+gv+","+gv+","+gv+")";
+          ctx.fillRect(gx, gy, 1.4, 1.4);
+        }
+        ctx.restore();
+      }
+
+      // 2c. 暗角 Vignette — 径向渐变叠加
+      if(film.vignette > 0){
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(ix, iy, imgW, imgH);
+        ctx.clip();
+        var vcx = ix + imgW/2, vcy = iy + imgH/2;
+        var vr = Math.max(imgW, imgH) * 0.75;
+        var vg = ctx.createRadialGradient(vcx, vcy, vr*0.4, vcx, vcy, vr);
+        var va = film.vignette / 100 * 0.7;
+        vg.addColorStop(0, "rgba(0,0,0,0)");
+        vg.addColorStop(1, "rgba(0,0,0,"+va.toFixed(3)+")");
+        ctx.fillStyle = vg;
+        ctx.fillRect(ix, iy, imgW, imgH);
+        ctx.restore();
+      }
 
       // 3. 图片外框细线（按皮肤）
       var b = Math.max(2, Math.round(1 * scale));
@@ -1289,6 +1600,12 @@
         drawCorner(ctx, ix + imgW, iy, clen, cth, "#C8531C", "tr");
         drawCorner(ctx, ix, iy + imgH, clen, cth, "#C8531C", "bl");
         drawCorner(ctx, ix + imgW, iy + imgH, clen, cth, "#C8531C", "br");
+      } else if(skin === "joycam"){
+        // 银色角标
+        drawCorner(ctx, ix, iy, clen, cth, "#6A6E76", "tl");
+        drawCorner(ctx, ix + imgW, iy, clen, cth, "#6A6E76", "tr");
+        drawCorner(ctx, ix, iy + imgH, clen, cth, "#6A6E76", "bl");
+        drawCorner(ctx, ix + imgW, iy + imgH, clen, cth, "#6A6E76", "br");
       }
       // instax：无角标
 
@@ -1296,6 +1613,7 @@
       var ins = Math.round(6 * scale);
       ctx.strokeStyle = skin === "noir" ? "rgba(255,255,255,0.06)" :
                         skin === "instax" ? "rgba(0,0,0,0.05)" :
+                        skin === "joycam" ? "rgba(255,255,255,0.2)" :
                         "rgba(255,255,255,0.25)";
       ctx.lineWidth = Math.max(1, Math.round(scale * 0.6));
       ctx.strokeRect(ix + ins, iy + ins, imgW - ins * 2, imgH - ins * 2);
@@ -1323,6 +1641,13 @@
         ctx.strokeStyle = "#C2241A";
         ctx.lineWidth = bord;
         ctx.strokeRect(bord / 2, bord / 2, paperW - bord, paperH - bord);
+      } else if(skin === "joycam"){
+        // 顶部银色条
+        var silH = Math.round(4 * scale);
+        var silG = ctx.createLinearGradient(0, 0, paperW, 0);
+        silG.addColorStop(0, "#6A6E76"); silG.addColorStop(0.5, "#A8ACB4"); silG.addColorStop(1, "#6A6E76");
+        ctx.fillStyle = silG;
+        ctx.fillRect(0, 0, paperW, silH);
       }
 
       // 7. 底部标题（按皮肤）
@@ -1339,6 +1664,8 @@
         ctx.fillStyle = "#9A9AA0";
       } else if(skin === "cam96"){
         ctx.fillStyle = "#C2241A";
+      } else if(skin === "joycam"){
+        ctx.fillStyle = "#1A1E22";
       } else {
         ctx.fillStyle = "#1A1410";
       }
