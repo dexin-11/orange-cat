@@ -243,6 +243,10 @@
     max-height:0;overflow:hidden;
     transition:max-height 3.6s cubic-bezier(.22,1,.36,1),box-shadow .4s ease .2s;
   }
+  /* measuring: 临时放开 max-height 以读取真实内容高度，无过渡 */
+  .photo-out .photo-card.measuring{
+    max-height:none !important;transition:none !important;
+  }
   .photo-out.printing .photo-card{
     max-height:var(--print-h,760px);
     box-shadow:0 12px 28px rgba(0,0,0,.24);
@@ -1376,6 +1380,7 @@
   var photoHideTimer = null;
   var photoDevelopTimer = null;
   var photoFsTimer = null;
+  var photoCloseAnimTimer = null;
   var scrollSyncRAF = null;
   var currentPhotoUrl = null;
   var currentPhotoSkin = "classic";
@@ -1384,6 +1389,7 @@
     if(photoHideTimer){ clearTimeout(photoHideTimer); photoHideTimer = null; }
     if(photoDevelopTimer){ clearTimeout(photoDevelopTimer); photoDevelopTimer = null; }
     if(photoFsTimer){ clearTimeout(photoFsTimer); photoFsTimer = null; }
+    if(photoCloseAnimTimer){ clearTimeout(photoCloseAnimTimer); photoCloseAnimTimer = null; }
     if(scrollSyncRAF){ cancelAnimationFrame(scrollSyncRAF); scrollSyncRAF = null; }
 
     var lensUrl = active.src;
@@ -1424,13 +1430,12 @@
     setTimeout(function(){
       var card = photoOut.querySelector(".photo-card");
       // 测量相纸实际高度，用精确值驱动 max-height 动画（避免固定大值导致动画失真）
-      // 临时放开 max-height 以读取 scrollHeight，再恢复
-      card.style.transition = "none";
-      card.style.maxHeight = "none";
+      // 方案：临时给 card 加一个测量用 class（max-height:none），读取 scrollHeight 后移除
+      // 不用 inline maxHeight，避免覆盖 printing 状态的 class 样式
+      card.classList.add("measuring");
       var targetHeight = card.scrollHeight;
-      card.style.maxHeight = "0px";
-      void card.offsetWidth; // reflow
-      card.style.transition = ""; // 恢复 CSS 定义的 transition
+      card.classList.remove("measuring");
+      void card.offsetWidth; // reflow 确保 transition 重置
       // 将精确高度写入 CSS 变量，printing 状态用该值
       card.style.setProperty("--print-h", targetHeight + "px");
 
@@ -1522,25 +1527,29 @@
     void card.offsetWidth;
     card.style.transition = "transform .5s cubic-bezier(.22,1,.36,1)";
     card.style.transform = "";
-    // 过渡结束后清理 inline 样式
-    setTimeout(function(){
+    // 过渡结束后清理 inline 样式（可被 takePhoto 取消）
+    if(photoCloseAnimTimer){ clearTimeout(photoCloseAnimTimer); }
+    photoCloseAnimTimer = setTimeout(function(){
       card.style.transition = "";
       card.style.transform = "";
       card.style.transformOrigin = "";
+      photoCloseAnimTimer = null;
     }, 520);
   }
   function closePhoto(){
     if(photoHideTimer){ clearTimeout(photoHideTimer); photoHideTimer = null; }
     if(photoDevelopTimer){ clearTimeout(photoDevelopTimer); photoDevelopTimer = null; }
     if(photoFsTimer){ clearTimeout(photoFsTimer); photoFsTimer = null; }
+    if(photoCloseAnimTimer){ clearTimeout(photoCloseAnimTimer); photoCloseAnimTimer = null; }
     if(scrollSyncRAF){ cancelAnimationFrame(scrollSyncRAF); scrollSyncRAF = null; }
     var card = photoOut.querySelector(".photo-card");
     if(photoOut.classList.contains("fullscreen")){
       // 全屏状态下关闭：先平滑退出全屏，动画结束后收回打印槽
       exitFullscreen();
-      setTimeout(function(){
+      photoCloseAnimTimer = setTimeout(function(){
         photoOut.classList.remove("printing","developed");
         if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; card.style.maxHeight=""; card.style.removeProperty("--print-h"); }
+        photoCloseAnimTimer = null;
       }, 520);
     } else {
       photoOut.classList.remove("printing","developed");
