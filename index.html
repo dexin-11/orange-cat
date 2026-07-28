@@ -240,11 +240,11 @@
     background:#F7F1E6;
     padding:16px 16px 44px;
     box-shadow:0 12px 28px rgba(0,0,0,.24);
-    max-height:0;opacity:0;overflow:hidden;
-    transition:max-height 1.4s cubic-bezier(.22,1,.36,1),opacity .4s ease;
+    max-height:0;overflow:hidden;
+    transition:max-height 1.5s cubic-bezier(.22,1,.36,1);
   }
   .photo-out.printing .photo-card{
-    max-height:720px;opacity:1;
+    max-height:760px;
   }
   /* art-frame */
   .photo-card .pic{
@@ -255,7 +255,7 @@
   .photo-card .pic .develop{
     position:absolute;inset:0;z-index:4;pointer-events:none;
     background:linear-gradient(160deg,#0B0603 0%,#1F1408 55%,#2E1C0C 100%);
-    opacity:1;transition:opacity 7s ease .8s;
+    opacity:1;transition:opacity 6s ease 1.5s;
   }
   .photo-out.printing .photo-card .pic .develop{opacity:0}
   .photo-out.developed .photo-card .pic .develop{opacity:0 !important}
@@ -263,7 +263,7 @@
     width:100%;height:100%;object-fit:cover;
     opacity:1;
     filter:blur(14px) brightness(.12) sepia(1) saturate(.5) contrast(.7);
-    transition:filter 7s ease .6s;
+    transition:filter 6s ease 1.5s;
   }
   .photo-out.printing .photo-card .pic img,
   .photo-out.developed .photo-card .pic img{
@@ -300,6 +300,53 @@
     cursor:pointer;padding:3px 6px;
   }
   .photo-card .save-btn:hover{color:#8A3A12}
+
+  /* ===== Fullscreen view (after print completes) ===== */
+  .photo-out.fullscreen{
+    position:fixed;inset:0;z-index:9999;
+    width:100%;max-width:none;margin:0;padding:0;
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;
+  }
+  /* frosted-glass backdrop */
+  .photo-out.fullscreen::before{
+    content:"";position:absolute;inset:0;z-index:0;
+    background:rgba(20,16,12,.5);
+    -webkit-backdrop-filter:blur(22px) saturate(1.3);
+    backdrop-filter:blur(22px) saturate(1.3);
+    animation:fsFade .35s ease forwards;
+  }
+  @keyframes fsFade{from{opacity:0}to{opacity:1}}
+  .photo-out.fullscreen .photo-card{
+    position:relative;z-index:2;
+    max-height:none;max-width:min(92vw,560px);width:100%;
+    overflow:visible;
+    box-shadow:0 30px 80px rgba(0,0,0,.5),0 10px 30px rgba(0,0,0,.3);
+  }
+  /* keep perforations inside the card when fullscreen (overflow visible) */
+  .photo-out.fullscreen .photo-card .perforations{z-index:7}
+  /* close button in fullscreen */
+  .photo-out .fs-close{
+    position:absolute;top:18px;right:18px;z-index:10;
+    width:38px;height:38px;border-radius:50%;
+    border:1px solid rgba(255,255,255,.4);
+    background:rgba(255,255,255,.12);
+    color:#fff;font-size:20px;line-height:1;cursor:pointer;
+    display:none;align-items:center;justify-content:center;
+    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+    transition:background .2s ease,transform .2s ease;
+  }
+  .photo-out .fs-close:hover{background:rgba(255,255,255,.25);transform:scale(1.08)}
+  .photo-out.fullscreen .fs-close{display:flex}
+  /* hint at bottom */
+  .photo-out .fs-hint{
+    position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
+    z-index:10;display:none;
+    font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.2em;
+    text-transform:uppercase;color:rgba(255,255,255,.6);
+    pointer-events:none;
+  }
+  .photo-out.fullscreen .fs-hint{display:block;animation:fsFade .5s ease .3s forwards;opacity:0}
 
   /* ===== Toast ===== */
   .toast{
@@ -946,6 +993,7 @@
 
   <!-- printed photo lives in the document flow, below the camera -->
   <div class="photo-out" id="photoOut">
+    <button class="fs-close" id="fsClose" type="button" aria-label="关闭">×</button>
     <div class="photo-card">
       <div class="perforations top" aria-hidden="true"></div>
       <div class="pic">
@@ -959,6 +1007,7 @@
       <div class="perforations bottom" aria-hidden="true"></div>
       <button class="save-btn" id="saveBtn" type="button">保存</button>
     </div>
+    <div class="fs-hint" aria-hidden="true">点击空白处或按 ESC 退出</div>
   </div>
 </div>
 
@@ -1016,6 +1065,7 @@
   var intensitySlider = $("intensitySlider");
   var intensityValue = $("intensityValue");
   var filmStamp = $("filmStamp");
+  var fsClose = $("fsClose");
 
   // ===== Audio (Web Audio API) =====
   var audioCtx = null;
@@ -1314,6 +1364,7 @@
   // ===== Shutter / take photo =====
   var photoHideTimer = null;
   var photoDevelopTimer = null;
+  var photoFsTimer = null;
   var scrollSyncRAF = null;
   var currentPhotoUrl = null;
   var currentPhotoSkin = "classic";
@@ -1321,6 +1372,7 @@
   function takePhoto(){
     if(photoHideTimer){ clearTimeout(photoHideTimer); photoHideTimer = null; }
     if(photoDevelopTimer){ clearTimeout(photoDevelopTimer); photoDevelopTimer = null; }
+    if(photoFsTimer){ clearTimeout(photoFsTimer); photoFsTimer = null; }
     if(scrollSyncRAF){ cancelAnimationFrame(scrollSyncRAF); scrollSyncRAF = null; }
 
     var lensUrl = active.src;
@@ -1350,7 +1402,7 @@
     flashScreen.classList.add("fire");
 
     // reset to inline emerge state
-    photoOut.classList.remove("printing","developed");
+    photoOut.classList.remove("printing","developed","fullscreen");
     var card0 = photoOut.querySelector(".photo-card");
     if(card0){ card0.style.transition=""; card0.style.transform=""; card0.style.transformOrigin=""; }
     void photoOut.offsetWidth; // reflow so develop animation replays
@@ -1361,21 +1413,21 @@
 
       // Scroll the page down in sync with the photo emerging from the slot.
       // The photo-card grows from 0 to its full height via a max-height
-      // transition (1.4s, cubic-bezier(.22,1,.36,1)). We scroll by the same
+      // transition (1.5s, cubic-bezier(.22,1,.36,1)). We scroll by the same
       // distance with the same easing so the photo stays in view as it prints,
       // while the camera scrolls up out of sight.
       var card = photoOut.querySelector(".photo-card");
       var targetHeight = card.scrollHeight;
       var startScroll = window.pageYOffset || document.documentElement.scrollTop;
       var targetScroll = startScroll + targetHeight;
-      var duration = 1400;
+      var duration = 1500;
       var startTime = performance.now();
       function ease(t){ return 1 - Math.pow(1 - t, 3); }
       function scrollStep(now){
         var elapsed = now - startTime;
         var t = Math.min(elapsed / duration, 1);
         window.scrollTo(0, startScroll + (targetScroll - startScroll) * ease(t));
-        if(t < 1 && photoOut.classList.contains("printing")){
+        if(t < 1 && photoOut.classList.contains("printing") && !photoOut.classList.contains("fullscreen")){
           scrollSyncRAF = requestAnimationFrame(scrollStep);
         } else {
           scrollSyncRAF = null;
@@ -1383,6 +1435,13 @@
       }
       scrollSyncRAF = requestAnimationFrame(scrollStep);
 
+      // 打印完成后（1.5s 动画 + 少许停顿）放大到全屏
+      photoFsTimer = setTimeout(function(){
+        enterFullscreen();
+        photoFsTimer = null;
+      }, 1900);
+
+      // 显影完成的兜底标记（确保 develop 层移除）
       photoDevelopTimer = setTimeout(function(){
         photoOut.classList.add("developed");
         photoDevelopTimer = null;
@@ -1391,19 +1450,86 @@
       photoHideTimer = setTimeout(function(){
         closePhoto();
         photoHideTimer = null;
-      }, 14000);
+      }, 20000);
     }, 200);
+  }
+  // FLIP 平滑放大到全屏：记录原位 → 切换全屏样式 → 反向变换 → 过渡到自然位
+  function enterFullscreen(){
+    if(photoOut.classList.contains("fullscreen")) return;
+    var card = photoOut.querySelector(".photo-card");
+    // 记录打印位置的矩形
+    var rect = card.getBoundingClientRect();
+    // 切换到全屏（fixed 居中 + 放大尺寸）
+    photoOut.classList.add("fullscreen");
+    // 记录全屏后的矩形
+    var newRect = card.getBoundingClientRect();
+    // 计算从新位到原位的反向变换（以中心为锚点）
+    var dx = (rect.left + rect.width/2) - (newRect.left + newRect.width/2);
+    var dy = (rect.top + rect.height/2) - (newRect.top + newRect.height/2);
+    var sx = rect.width / newRect.width;
+    var sy = rect.height / newRect.height;
+    // 立即应用反向变换（无过渡），让卡片看起来还在打印位置
+    card.style.transformOrigin = "center center";
+    card.style.transition = "none";
+    card.style.transform = "translate("+dx+"px,"+dy+"px) scale("+sx+","+sy+")";
+    void card.offsetWidth; // reflow
+    // 过渡到自然位置（全屏居中、放大）
+    card.style.transition = "transform .6s cubic-bezier(.22,1,.36,1)";
+    card.style.transform = "";
+  }
+  // 退出全屏：反向 FLIP，平滑回到打印位置
+  function exitFullscreen(){
+    if(!photoOut.classList.contains("fullscreen")) return;
+    var card = photoOut.querySelector(".photo-card");
+    // 记录全屏位置
+    var rect = card.getBoundingClientRect();
+    // 退出全屏
+    photoOut.classList.remove("fullscreen");
+    // 记录打印位置
+    var newRect = card.getBoundingClientRect();
+    var dx = (rect.left + rect.width/2) - (newRect.left + newRect.width/2);
+    var dy = (rect.top + rect.height/2) - (newRect.top + newRect.height/2);
+    var sx = rect.width / newRect.width;
+    var sy = rect.height / newRect.height;
+    card.style.transformOrigin = "center center";
+    card.style.transition = "none";
+    card.style.transform = "translate("+dx+"px,"+dy+"px) scale("+sx+","+sy+")";
+    void card.offsetWidth;
+    card.style.transition = "transform .5s cubic-bezier(.22,1,.36,1)";
+    card.style.transform = "";
+    // 过渡结束后清理 inline 样式
+    setTimeout(function(){
+      card.style.transition = "";
+      card.style.transform = "";
+      card.style.transformOrigin = "";
+    }, 520);
   }
   function closePhoto(){
     if(photoHideTimer){ clearTimeout(photoHideTimer); photoHideTimer = null; }
     if(photoDevelopTimer){ clearTimeout(photoDevelopTimer); photoDevelopTimer = null; }
+    if(photoFsTimer){ clearTimeout(photoFsTimer); photoFsTimer = null; }
     if(scrollSyncRAF){ cancelAnimationFrame(scrollSyncRAF); scrollSyncRAF = null; }
-    photoOut.classList.remove("printing","developed");
-    // clear inline transform so next print starts clean
     var card = photoOut.querySelector(".photo-card");
-    if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; }
+    if(photoOut.classList.contains("fullscreen")){
+      // 全屏状态下关闭：先平滑退出全屏，动画结束后收回打印槽
+      exitFullscreen();
+      setTimeout(function(){
+        photoOut.classList.remove("printing","developed");
+        if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; }
+      }, 520);
+    } else {
+      photoOut.classList.remove("printing","developed");
+      if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; }
+    }
   }
   $("shutterTop").addEventListener("click", function(e){ e.stopPropagation(); takePhoto(); });
+  // 点击毛玻璃背景退出全屏（不触发保存/关闭按钮）
+  photoOut.addEventListener("click", function(e){
+    if(photoOut.classList.contains("fullscreen") && e.target === photoOut){
+      exitFullscreen();
+    }
+  });
+  if(fsClose){ fsClose.addEventListener("click", function(e){ e.stopPropagation(); exitFullscreen(); }); }
 
   // ===== Save photo (with Polaroid frame, as seen in preview) =====
   // 将相纸背景 + 猫图 + 四角括号 + 内框线 + 底部标题一起绘制到 canvas 后导出 JPEG
@@ -1740,7 +1866,10 @@
   document.addEventListener("keydown", function(e){
     if(e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
     var k = e.key.toLowerCase();
-    if(k === "escape"){ if(photoOut.classList.contains("printing")){ e.preventDefault(); closePhoto(); } }
+    if(k === "escape"){
+      if(photoOut.classList.contains("fullscreen")){ e.preventDefault(); exitFullscreen(); }
+      else if(photoOut.classList.contains("printing")){ e.preventDefault(); closePhoto(); }
+    }
     else if(k === "c" || k === " "){ e.preventDefault(); takePhoto(); }
   });
 
