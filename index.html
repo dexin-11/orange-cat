@@ -857,9 +857,9 @@
   .adv-toggle{
     display:inline-flex;align-items:center;gap:6px;
     border:1px solid var(--rule-strong);background:var(--paper);
-    padding:6px 12px;cursor:pointer;
-    font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.14em;
-    text-transform:uppercase;color:var(--ink-soft);
+    padding:8px 14px;cursor:pointer;
+    font-family:"Space Mono",monospace;font-size:12px;letter-spacing:.1em;
+    color:var(--ink-soft);
     transition:all .25s ease;
   }
   .adv-toggle:hover{border-color:var(--ink);color:var(--ink)}
@@ -869,23 +869,30 @@
     transition:max-height .4s cubic-bezier(.22,1,.36,1);
     width:100%;max-width:440px;margin:0 auto;
   }
-  .adv-panel.open{max-height:340px}
+  .adv-panel.open{max-height:480px}
   .adv-inner{
     border:1px solid var(--rule-strong);background:var(--cream);
     padding:16px 18px;margin-top:8px;
     display:flex;flex-direction:column;gap:14px;
   }
   body.night .adv-inner{background:var(--paper-deep)}
-  .adv-row{display:flex;flex-direction:column;gap:6px}
+  .adv-row{display:flex;flex-direction:column;gap:8px}
   .adv-row .adv-label{
     display:flex;justify-content:space-between;align-items:baseline;
-    font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.12em;
-    text-transform:uppercase;color:var(--ink-soft);
+    font-family:"Space Mono",monospace;font-size:13px;letter-spacing:.08em;
+    color:var(--ink);font-weight:600;
   }
-  .adv-row .adv-label .val{color:var(--sienna);font-weight:700}
+  .adv-row .adv-label .val{
+    color:var(--sienna);font-weight:700;font-size:13px;
+    min-width:28px;text-align:right;
+  }
+  .adv-row .adv-hint{
+    font-family:"Space Mono",monospace;font-size:11px;line-height:1.4;
+    color:var(--ink-soft);letter-spacing:.02em;
+  }
   .adv-row input[type="range"]{
-    -webkit-appearance:none;appearance:none;width:100%;height:3px;
-    background:var(--rule-strong);outline:none;cursor:pointer;
+    -webkit-appearance:none;appearance:none;width:100%;height:4px;
+    background:var(--rule-strong);outline:none;cursor:pointer;border-radius:2px;
   }
   .adv-row input[type="range"]::-webkit-slider-thumb{
     -webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;
@@ -902,8 +909,8 @@
   }
   .adv-reset{
     align-self:flex-start;background:transparent;border:none;cursor:pointer;
-    font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.14em;
-    text-transform:uppercase;color:var(--ink-faint);padding:2px 0;
+    font-family:"Space Mono",monospace;font-size:12px;letter-spacing:.1em;
+    color:var(--ink-faint);padding:2px 0;
   }
   .adv-reset:hover{color:var(--sienna)}
 </style>
@@ -957,14 +964,17 @@
       <div class="adv-film-name" id="advFilmName">Classic Chrome · 经典正片</div>
       <div class="adv-row">
         <div class="adv-label"><span>颗粒 Grain</span><span class="val" id="grainVal">0</span></div>
+        <div class="adv-hint">胶片颗粒感，数值越大噪点越明显</div>
         <input type="range" id="grainSlider" min="0" max="100" value="0" />
       </div>
       <div class="adv-row">
         <div class="adv-label"><span>暗角 Vignette</span><span class="val" id="vignetteVal">0</span></div>
+        <div class="adv-hint">四周变暗，数值越大边缘越暗</div>
         <input type="range" id="vignetteSlider" min="0" max="100" value="0" />
       </div>
       <div class="adv-row">
         <div class="adv-label"><span>褪色 Fade</span><span class="val" id="fadeVal">0</span></div>
+        <div class="adv-hint">降低对比度并提亮黑场，营造褪色复古感</div>
         <input type="range" id="fadeSlider" min="0" max="100" value="0" />
       </div>
       <button class="adv-reset" id="advReset" type="button">重置参数</button>
