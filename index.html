@@ -111,9 +111,23 @@
 
   /* ===== Polaroid camera body ===== */
   .frame{
+    --cam-body:linear-gradient(170deg,#FAF4EA 0%,#EDE3D2 50%,#DDD0BB 100%);
+    --cam-body-night:linear-gradient(170deg,#2A2622 0%,#1F1B17 50%,#15110D 100%);
+    --stripe:linear-gradient(90deg,
+      #E2483A 0%,#E2483A 14%,
+      #F4B73C 14%,#F4B73C 28%,
+      #6FB84A 28%,#6FB84A 42%,
+      #3A9EDD 42%,#3A9EDD 56%,
+      #7B5CD4 56%,#7B5CD4 70%,
+      #2A2622 70%);
+    --brand:#2A2622;
+    --brand-night:#E8DCC8;
+    --shutter:radial-gradient(circle at 35% 30%,#F25846,#C8531C 60%,#8A3A12);
+    --ring:#2A2622;
+    --ring-night:#15110D;
     position:relative;
     max-width:440px;width:100%;margin:0 auto;
-    background:linear-gradient(170deg,#FAF4EA 0%,#EDE3D2 50%,#DDD0BB 100%);
+    background:var(--cam-body);
     border-radius:20px 20px 14px 14px;
     padding:0;
     box-shadow:
@@ -123,18 +137,12 @@
       0 8px 18px rgba(0,0,0,.18);
     transition:background .6s ease;
   }
-  body.night .frame{background:linear-gradient(170deg,#2A2622 0%,#1F1B17 50%,#15110D 100%)}
+  body.night .frame{background:var(--cam-body-night)}
 
   /* signature rainbow stripe across the top (Polaroid OneStep) */
   .rainbow{
     height:10px;border-radius:20px 20px 0 0;
-    background:linear-gradient(90deg,
-      #E2483A 0%,#E2483A 14%,
-      #F4B73C 14%,#F4B73C 28%,
-      #6FB84A 28%,#6FB84A 42%,
-      #3A9EDD 42%,#3A9EDD 56%,
-      #7B5CD4 56%,#7B5CD4 70%,
-      #2A2622 70%);
+    background:var(--stripe);
     box-shadow:0 1px 0 rgba(255,255,255,.4) inset;
   }
 
@@ -156,17 +164,17 @@
   .cam-top .brand{
     flex:1;text-align:right;
     font-family:"Fraunces",serif;font-style:italic;font-weight:700;
-    font-size:14px;color:#2A2622;letter-spacing:.02em;
+    font-size:14px;color:var(--brand);letter-spacing:.02em;
   }
-  body.night .cam-top .brand{color:#E8DCC8}
+  body.night .cam-top .brand{color:var(--brand-night)}
 
   /* shutter button on top-right */
   .cam-top .shutter{
     width:34px;height:34px;border-radius:50%;
-    background:radial-gradient(circle at 35% 30%,#F25846,#C8531C 60%,#8A3A12);
+    background:var(--shutter);
     box-shadow:0 2px 4px rgba(0,0,0,.25),inset 0 1px 1px rgba(255,255,255,.4),inset 0 -2px 3px rgba(0,0,0,.2);
     border:none;cursor:pointer;flex:none;
-    transition:transform .12s ease;
+    transition:transform .12s ease,background .4s ease;
   }
   .cam-top .shutter:hover{transform:scale(1.06)}
   .cam-top .shutter:active{transform:scale(.92)}
@@ -177,17 +185,17 @@
     aspect-ratio:4/3;border-radius:10px;
     background:#0A0907;
     box-shadow:
-      0 0 0 3px #2A2622,
+      0 0 0 3px var(--ring),
       0 0 0 4px rgba(255,255,255,.4),
-      0 0 0 8px #2A2622,
+      0 0 0 8px var(--ring),
       0 0 0 9px rgba(0,0,0,.15),
       0 8px 18px rgba(0,0,0,.3),
       inset 0 2px 6px rgba(0,0,0,.6);
     overflow:hidden;z-index:2;
   }
   body.night .lens{box-shadow:
-    0 0 0 3px #15110D,0 0 0 4px rgba(255,255,255,.15),
-    0 0 0 8px #15110D,0 0 0 9px rgba(0,0,0,.4),
+    0 0 0 3px var(--ring-night),0 0 0 4px rgba(255,255,255,.15),
+    0 0 0 8px var(--ring-night),0 0 0 9px rgba(0,0,0,.4),
     0 8px 18px rgba(0,0,0,.5),inset 0 2px 6px rgba(0,0,0,.7)}
   /* subtle inner ring */
   .lens::before{
@@ -326,6 +334,128 @@
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.01ms !important;transition-duration:.01ms !important}
   }
+
+  /* ===== Camera style switcher ===== */
+  .style-bar{
+    display:flex;flex-wrap:wrap;justify-content:center;gap:8px;
+    margin-top:-4px;
+  }
+  .style-chip{
+    display:inline-flex;align-items:center;gap:8px;
+    border:1px solid var(--rule-strong);background:var(--paper);
+    padding:6px 10px 6px 8px;cursor:pointer;
+    font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ink-soft);
+    transition:all .25s ease;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);
+  }
+  .style-chip:hover{border-color:var(--ink);color:var(--ink)}
+  .style-chip.is-active{
+    border-color:var(--sienna);color:var(--ink);
+    box-shadow:0 0 0 1px var(--sienna),0 2px 6px rgba(200,83,28,.18);
+  }
+  .chip-swatch{
+    width:14px;height:14px;border-radius:3px;flex:none;
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);
+  }
+  .chip-swatch.s-classic{background:linear-gradient(90deg,#E2483A,#F4B73C 30%,#3A9EDD 55%,#7B5CD4 75%,#2A2622)}
+  .chip-swatch.s-instax{background:linear-gradient(170deg,#E6E7EB 40%,#1C1C20 42%)}
+  .chip-swatch.s-cam96{background:linear-gradient(90deg,#E63A2E,#1E7FE0 50%,#F2D03A)}
+  .chip-swatch.s-noir{background:linear-gradient(170deg,#2A2A2E,#0A0A0C)}
+  .chip-swatch.s-limoland{
+    background:#fff;
+    background-image:
+      radial-gradient(circle at 30% 35%,#F2C94C 0 3px,transparent 4px),
+      radial-gradient(circle at 70% 65%,#EB5757 0 3px,transparent 4px);
+  }
+
+  /* ===== Skin: Fujifilm instax mini 40/41 — silver + black leather ===== */
+  .frame.skin-instax{
+    --cam-body:linear-gradient(170deg,#E8E9ED 0%,#C9CBD2 42%,#1C1C20 43%,#0C0C10 100%);
+    --cam-body-night:linear-gradient(170deg,#3C3C42 0%,#2C2C32 42%,#08080C 43%,#000 100%);
+    --stripe:linear-gradient(90deg,#C9CBD2 0%,#9EA0A8 50%,#C9CBD2 100%);
+    --brand:#15151A;--brand-night:#E8E9ED;
+    --shutter:radial-gradient(circle at 35% 30%,#5A5C66,#1C1C20 60%,#000);
+    --ring:#1C1C20;--ring-night:#000;
+  }
+  /* fine leather grain on lower body */
+  .frame.skin-instax::after{
+    content:"";position:absolute;left:0;right:0;top:43%;bottom:0;
+    border-radius:0 0 14px 14px;pointer-events:none;z-index:1;
+    background-color:#0C0C10;
+    background-image:
+      radial-gradient(rgba(255,255,255,.06) 0.5px,transparent 1px),
+      radial-gradient(rgba(0,0,0,.5) 0.5px,transparent 1px);
+    background-size:3px 3px,5px 5px;
+    background-position:0 0,2px 2px;
+    opacity:.9;
+  }
+  body.night .frame.skin-instax::after{opacity:.6}
+
+  /* ===== Skin: Polaroid 600 "96 Cam" — jazz red + neon totems ===== */
+  .frame.skin-cam96{
+    --cam-body:linear-gradient(170deg,#E63A2E 0%,#C2241A 50%,#9A1A12 100%);
+    --cam-body-night:linear-gradient(170deg,#7A1E16 0%,#5A120C 50%,#2A0804 100%);
+    --stripe:linear-gradient(90deg,#1E7FE0 0%,#1E7FE0 25%,#F2D03A 25%,#F2D03A 50%,#36C7D6 50%,#36C7D6 75%,#FF4FA3 75%);
+    --brand:#FFF8EC;--brand-night:#FFF8EC;
+    --shutter:radial-gradient(circle at 35% 30%,#FFE14D,#F2B03A 60%,#C97A1A);
+    --ring:#1A1410;--ring-night:#000;
+  }
+  /* scattered totem squares on body */
+  .frame.skin-cam96::after{
+    content:"";position:absolute;inset:0;border-radius:20px 20px 14px 14px;
+    pointer-events:none;z-index:1;opacity:.22;mix-blend-mode:screen;
+    background-image:
+      linear-gradient(45deg,#FFD23A 25%,transparent 25%,transparent 50%,#36C7D6 50%,#36C7D6 75%,transparent 75%),
+      linear-gradient(-45deg,#FF4FA3 25%,transparent 25%,transparent 50%,#1E7FE0 50%,#1E7FE0 75%,transparent 75%);
+    background-size:26px 26px,26px 26px;
+    background-position:0 0,13px 13px;
+    -webkit-mask:linear-gradient(180deg,transparent 0,transparent 12%,#000 14%,#000 38%,transparent 40%);
+            mask:linear-gradient(180deg,transparent 0,transparent 12%,#000 14%,#000 38%,transparent 40%);
+  }
+
+  /* ===== Skin: all-black (instax SQUARE SQ40 / instax 210) ===== */
+  .frame.skin-noir{
+    --cam-body:linear-gradient(170deg,#2B2B30 0%,#16161A 50%,#0A0A0C 100%);
+    --cam-body-night:linear-gradient(170deg,#18181C 0%,#0C0C0E 50%,#000 100%);
+    --stripe:linear-gradient(90deg,#16161A 0%,#2E2E34 50%,#16161A 100%);
+    --brand:#9A9AA0;--brand-night:#6A6A70;
+    --shutter:radial-gradient(circle at 35% 30%,#3A3A40,#16161A 60%,#000);
+    --ring:#0A0A0C;--ring-night:#000;
+  }
+  /* subtle matte grain */
+  .frame.skin-noir::after{
+    content:"";position:absolute;inset:0;border-radius:20px 20px 14px 14px;
+    pointer-events:none;z-index:1;opacity:.5;
+    background-image:radial-gradient(rgba(255,255,255,.025) 0.5px,transparent 1px);
+    background-size:3px 3px;
+  }
+
+  /* ===== Skin: Leica SOFORT "LimoLand" — white + Mr. Limo smileys + red strap ===== */
+  .frame.skin-limoland{
+    --cam-body:linear-gradient(170deg,#FFFFFF 0%,#F4F2EE 50%,#E8E4DC 100%);
+    --cam-body-night:linear-gradient(170deg,#2E2A26 0%,#242020 50%,#1A1614 100%);
+    --stripe:linear-gradient(90deg,#E63A2E,#C2241A);
+    --brand:#1A1410;--brand-night:#F2EAD8;
+    --shutter:radial-gradient(circle at 35% 30%,#FF6A5A,#E63A2E 60%,#9A1A12);
+    --ring:#E8E4DC;--ring-night:#1A1614;
+  }
+  /* red strap across the top */
+  .frame.skin-limoland::before{
+    content:"";position:absolute;top:-5px;left:18%;right:18%;height:7px;z-index:3;
+    background:linear-gradient(180deg,#FF6A5A,#C2241A);
+    border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.2);
+  }
+  /* Mr. Limo smiley pattern on body */
+  .frame.skin-limoland::after{
+    content:"";position:absolute;inset:0;border-radius:20px 20px 14px 14px;
+    pointer-events:none;z-index:1;opacity:.5;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cg%3E%3Ccircle cx='16' cy='16' r='8' fill='%23F2C94C'/%3E%3Ccircle cx='13' cy='14' r='1.2' fill='%231A1410'/%3E%3Ccircle cx='19' cy='14' r='1.2' fill='%231A1410'/%3E%3Cpath d='M11 18 Q16 22 21 18' stroke='%231A1410' stroke-width='1.2' fill='none' stroke-linecap='round'/%3E%3C/g%3E%3Cg%3E%3Ccircle cx='48' cy='48' r='8' fill='%23EB5757'/%3E%3Ccircle cx='45' cy='46' r='1.2' fill='%231A1410'/%3E%3Ccircle cx='51' cy='46' r='1.2' fill='%231A1410'/%3E%3Cpath d='M43 50 Q48 54 53 50' stroke='%231A1410' stroke-width='1.2' fill='none' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat:repeat;background-size:64px 64px;
+    -webkit-mask:linear-gradient(180deg,transparent 0,transparent 13%,#000 16%,#000 40%,transparent 43%);
+            mask:linear-gradient(180deg,transparent 0,transparent 13%,#000 16%,#000 40%,transparent 43%);
+  }
+  body.night .frame.skin-limoland::after{opacity:.25}
 </style>
 </head>
 <body>
@@ -343,6 +473,25 @@
     <div class="sub">Cat Photo Studio</div>
     <div class="rule"></div>
   </header>
+
+  <!-- ===== Camera style switcher ===== -->
+  <div class="style-bar" id="styleBar" role="group" aria-label="相机样式">
+    <button class="style-chip is-active" type="button" data-skin="classic" title="Polaroid OneStep 彩虹">
+      <span class="chip-swatch s-classic"></span><span class="chip-name">经典</span>
+    </button>
+    <button class="style-chip" type="button" data-skin="instax" title="Fujifilm instax mini 40/41 银黑">
+      <span class="chip-swatch s-instax"></span><span class="chip-name">instax</span>
+    </button>
+    <button class="style-chip" type="button" data-skin="cam96" title="Polaroid 600 96 Cam 撞色">
+      <span class="chip-swatch s-cam96"></span><span class="chip-name">96 Cam</span>
+    </button>
+    <button class="style-chip" type="button" data-skin="noir" title="instax SQUARE SQ40 / instax 210 全黑">
+      <span class="chip-swatch s-noir"></span><span class="chip-name">NOIR</span>
+    </button>
+    <button class="style-chip" type="button" data-skin="limoland" title="Leica SOFORT LimoLand 笑脸">
+      <span class="chip-swatch s-limoland"></span><span class="chip-name">LimoLand</span>
+    </button>
+  </div>
 
   <!-- ===== Polaroid camera ===== -->
   <section class="frame" id="frame" aria-label="拍立得相机">
@@ -472,6 +621,34 @@
     setTheme(!state.night);
     showToast(state.night ? "切换至夜间模式" : "切换至白天模式");
   });
+
+  // ===== Camera skin switcher =====
+  var SKINS = ["classic","instax","cam96","noir","limoland"];
+  var SKIN_NAMES = {classic:"经典彩虹",instax:"instax 银黑",cam96:"96 Cam 撞色",noir:"全黑 NOIR",limoland:"LimoLand 笑脸"};
+  var frameEl = $("frame");
+  var styleBar = $("styleBar");
+  function applySkin(name){
+    if(SKINS.indexOf(name) < 0) name = "classic";
+    SKINS.forEach(function(s){ frameEl.classList.remove("skin-"+s); });
+    if(name !== "classic") frameEl.classList.add("skin-"+name);
+    try{ localStorage.setItem("cat-skin", name); }catch(e){}
+    var chips = styleBar.querySelectorAll(".style-chip");
+    for(var i=0;i<chips.length;i++){
+      chips[i].classList.toggle("is-active", chips[i].getAttribute("data-skin") === name);
+    }
+  }
+  styleBar.addEventListener("click", function(e){
+    var btn = e.target.closest ? e.target.closest(".style-chip") : null;
+    if(!btn) return;
+    var name = btn.getAttribute("data-skin");
+    applySkin(name);
+    showToast(SKIN_NAMES[name] || name);
+  });
+  (function(){
+    var saved = null;
+    try{ saved = localStorage.getItem("cat-skin"); }catch(e){}
+    applySkin(saved || "classic");
+  })();
 
   // ===== Cat image rotation (crossfade every ~7s, uses prefetch pool) =====
   var rotateTimer = null;
