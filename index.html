@@ -239,12 +239,13 @@
     position:relative;
     background:#F7F1E6;
     padding:16px 16px 44px;
-    box-shadow:0 12px 28px rgba(0,0,0,.24);
+    box-shadow:none;
     max-height:0;overflow:hidden;
-    transition:max-height 3.6s cubic-bezier(.34,1.4,.64,1);
+    transition:max-height 3.6s cubic-bezier(.22,1,.36,1),box-shadow .4s ease .2s;
   }
   .photo-out.printing .photo-card{
-    max-height:760px;
+    max-height:var(--print-h,760px);
+    box-shadow:0 12px 28px rgba(0,0,0,.24);
   }
   /* art-frame */
   .photo-card .pic{
@@ -322,6 +323,12 @@
     max-height:none;max-width:min(92vw,560px);width:100%;
     overflow:visible;
     box-shadow:0 30px 80px rgba(0,0,0,.5),0 10px 30px rgba(0,0,0,.3);
+  }
+  .photo-out.fullscreen.skin-cam96 .photo-card{
+    box-shadow:0 30px 80px rgba(0,0,0,.5),0 10px 30px rgba(0,0,0,.3),0 0 0 2px #C2241A inset;
+  }
+  .photo-out.fullscreen.skin-joycam .photo-card{
+    box-shadow:0 30px 80px rgba(0,0,0,.5),0 10px 30px rgba(0,0,0,.3),0 0 0 1px #6A6E76 inset;
   }
   /* keep perforations inside the card when fullscreen (overflow visible) */
   .photo-out.fullscreen .photo-card .perforations{z-index:7}
@@ -648,6 +655,8 @@
   .photo-out.skin-cam96 .photo-card{
     background:linear-gradient(180deg,#FFF8EC 0%,#FFE8D6 100%);
     padding:16px 16px 48px;
+  }
+  .photo-out.skin-cam96.printing .photo-card{
     box-shadow:0 12px 28px rgba(0,0,0,.24),0 0 0 2px #C2241A inset;
   }
   .photo-out.skin-cam96 .photo-card .pic::after{
@@ -719,6 +728,8 @@
   .photo-out.skin-joycam .photo-card{
     background:linear-gradient(180deg,#E8EAEE 0%,#D0D4DC 100%);
     padding:18px 18px 48px;
+  }
+  .photo-out.skin-joycam.printing .photo-card{
     box-shadow:0 12px 28px rgba(0,0,0,.24),0 0 0 1px #6A6E76 inset;
   }
   .photo-out.skin-joycam .photo-card .pic{
@@ -1404,26 +1415,39 @@
     // reset to inline emerge state
     photoOut.classList.remove("printing","developed","fullscreen");
     var card0 = photoOut.querySelector(".photo-card");
-    if(card0){ card0.style.transition=""; card0.style.transform=""; card0.style.transformOrigin=""; }
+    if(card0){
+      card0.style.transition=""; card0.style.transform=""; card0.style.transformOrigin="";
+      card0.style.maxHeight=""; card0.style.removeProperty("--print-h");
+    }
     void photoOut.offsetWidth; // reflow so develop animation replays
 
     setTimeout(function(){
+      var card = photoOut.querySelector(".photo-card");
+      // 测量相纸实际高度，用精确值驱动 max-height 动画（避免固定大值导致动画失真）
+      // 临时放开 max-height 以读取 scrollHeight，再恢复
+      card.style.transition = "none";
+      card.style.maxHeight = "none";
+      var targetHeight = card.scrollHeight;
+      card.style.maxHeight = "0px";
+      void card.offsetWidth; // reflow
+      card.style.transition = ""; // 恢复 CSS 定义的 transition
+      // 将精确高度写入 CSS 变量，printing 状态用该值
+      card.style.setProperty("--print-h", targetHeight + "px");
+
       photoOut.classList.add("printing");
       showToast("已拍摄 · FILM #"+String(state.photos).padStart(3,"0"));
 
       // Scroll the page down in sync with the photo emerging from the slot.
       // The photo-card grows from 0 to its full height via a max-height
-      // transition (3.6s, cubic-bezier(.34,1.4,.64,1)). We scroll by the same
+      // transition (3.6s, cubic-bezier(.22,1,.36,1)). We scroll by the same
       // distance with a matching easing so the photo stays in view as it prints,
       // while the camera scrolls up out of sight.
-      var card = photoOut.querySelector(".photo-card");
-      var targetHeight = card.scrollHeight;
       var startScroll = window.pageYOffset || document.documentElement.scrollTop;
       var targetScroll = startScroll + targetHeight;
       var duration = 3600;
       var startTime = performance.now();
-      // 与 CSS 的 cubic-bezier(.34,1.4,.64,1) 近似的缓动
-      function ease(t){ t = 1 - Math.pow(1 - t, 3); return t; }
+      // 与 CSS 的 cubic-bezier(.22,1,.36,1) 近似的缓动（cubic ease-out）
+      function ease(t){ return 1 - Math.pow(1 - t, 3); }
       function scrollStep(now){
         var elapsed = now - startTime;
         var t = Math.min(elapsed / duration, 1);
@@ -1516,11 +1540,11 @@
       exitFullscreen();
       setTimeout(function(){
         photoOut.classList.remove("printing","developed");
-        if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; }
+        if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; card.style.maxHeight=""; card.style.removeProperty("--print-h"); }
       }, 520);
     } else {
       photoOut.classList.remove("printing","developed");
-      if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; }
+      if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; card.style.maxHeight=""; card.style.removeProperty("--print-h"); }
     }
   }
   $("shutterTop").addEventListener("click", function(e){ e.stopPropagation(); takePhoto(); });
