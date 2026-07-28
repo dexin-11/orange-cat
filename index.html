@@ -241,13 +241,15 @@
     padding:16px 16px 44px;
     box-shadow:none;
     max-height:0;overflow:hidden;
-    transition:max-height 3.6s cubic-bezier(.22,1,.36,1),box-shadow .4s ease .2s;
+    display:none;
+    transition:max-height 5s cubic-bezier(.22,1,.36,1),box-shadow .4s ease .2s;
   }
-  /* measuring: 临时放开 max-height 以读取真实内容高度，无过渡 */
+  /* measuring: 临时放开 max-height 以读取真实内容高度，无过渡、需可见 */
   .photo-out .photo-card.measuring{
-    max-height:none !important;transition:none !important;
+    max-height:none !important;transition:none !important;display:block;
   }
   .photo-out.printing .photo-card{
+    display:block;
     max-height:var(--print-h,760px);
     box-shadow:0 12px 28px rgba(0,0,0,.24);
   }
@@ -260,7 +262,7 @@
   .photo-card .pic .develop{
     position:absolute;inset:0;z-index:4;pointer-events:none;
     background:linear-gradient(160deg,#0B0603 0%,#1F1408 55%,#2E1C0C 100%);
-    opacity:1;transition:opacity 8s ease 3.6s;
+    opacity:1;transition:opacity 10s ease 5s;
   }
   .photo-out.printing .photo-card .pic .develop{opacity:0}
   .photo-out.developed .photo-card .pic .develop{opacity:0 !important}
@@ -268,7 +270,7 @@
     width:100%;height:100%;object-fit:cover;
     opacity:1;
     filter:blur(14px) brightness(.12) sepia(1) saturate(.5) contrast(.7);
-    transition:filter 8s ease 3.6s;
+    transition:filter 10s ease 5s;
   }
   .photo-out.printing .photo-card .pic img,
   .photo-out.developed .photo-card .pic img{
@@ -1421,11 +1423,19 @@
     // reset to inline emerge state
     photoOut.classList.remove("printing","developed","fullscreen");
     var card0 = photoOut.querySelector(".photo-card");
+    var develop0 = photoOut.querySelector(".pic .develop");
+    var img0 = photoOut.querySelector(".pic img");
     if(card0){
       card0.style.transition=""; card0.style.transform=""; card0.style.transformOrigin="";
       card0.style.maxHeight=""; card0.style.removeProperty("--print-h");
     }
+    // 强制重置显影动画：临时清除 transition 让 develop/img 立即回到初始状态，
+    // reflow 后恢复 transition，确保第二次拍照时显影过渡能完整触发
+    if(develop0){ develop0.style.transition="none"; develop0.style.opacity=""; }
+    if(img0){ img0.style.transition="none"; img0.style.filter=""; }
     void photoOut.offsetWidth; // reflow so develop animation replays
+    if(develop0){ develop0.style.transition=""; }
+    if(img0){ img0.style.transition=""; }
 
     setTimeout(function(){
       var card = photoOut.querySelector(".photo-card");
@@ -1444,12 +1454,12 @@
 
       // Scroll the page down in sync with the photo emerging from the slot.
       // The photo-card grows from 0 to its full height via a max-height
-      // transition (3.6s, cubic-bezier(.22,1,.36,1)). We scroll by the same
+      // transition (5s, cubic-bezier(.22,1,.36,1)). We scroll by the same
       // distance with a matching easing so the photo stays in view as it prints,
       // while the camera scrolls up out of sight.
       var startScroll = window.pageYOffset || document.documentElement.scrollTop;
       var targetScroll = startScroll + targetHeight;
-      var duration = 3600;
+      var duration = 5000;
       var startTime = performance.now();
       // 与 CSS 的 cubic-bezier(.22,1,.36,1) 近似的缓动（cubic ease-out）
       function ease(t){ return 1 - Math.pow(1 - t, 3); }
@@ -1465,22 +1475,22 @@
       }
       scrollSyncRAF = requestAnimationFrame(scrollStep);
 
-      // 打印完成后（3.6s 动画 + 少许停顿）放大到全屏
+      // 打印完成后（5s 动画 + 少许停顿）放大到全屏
       photoFsTimer = setTimeout(function(){
         enterFullscreen();
         photoFsTimer = null;
-      }, 4000);
+      }, 5500);
 
-      // 显影完成的兜底标记（打印 3.6s + 显影 8s）
+      // 显影完成的兜底标记（打印 5s + 显影 10s）
       photoDevelopTimer = setTimeout(function(){
         photoOut.classList.add("developed");
         photoDevelopTimer = null;
-      }, 12000);
+      }, 16000);
 
       photoHideTimer = setTimeout(function(){
         closePhoto();
         photoHideTimer = null;
-      }, 24000);
+      }, 30000);
     }, 200);
   }
   // FLIP 平滑放大到全屏：记录原位 → 切换全屏样式 → 反向变换 → 过渡到自然位
