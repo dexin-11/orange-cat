@@ -597,6 +597,121 @@
   .frame.skin-limoland .lens-badge::after{content:"SOFORT"}
   .frame.skin-limoland .lens-mirror{display:block;width:14px;height:11px;top:6px;right:8px;left:auto;
     background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(200,180,160,.55) 60%,rgba(140,120,100,.35))}
+
+  /* ===== Rainbow stripe top radius matches each skin's --frame-radius ===== */
+  .frame.skin-instax .rainbow{border-radius:22px 22px 0 0}
+  .frame.skin-cam96 .rainbow{border-radius:18px 18px 0 0}
+  .frame.skin-noir .rainbow{border-radius:10px 10px 0 0}
+  .frame.skin-limoland .rainbow{border-radius:24px 24px 0 0}
+
+  /* ===== Photo frame skin variants ===== */
+  /* classic: Polaroid OneStep — rainbow stripe on top edge of photo */
+  .photo-out.skin-classic .photo-card{
+    background:#F7F1E6;padding:18px 18px 48px;
+  }
+  body.night .photo-out.skin-classic .photo-card{background:#1E1914}
+  .photo-out.skin-classic .photo-card::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:5px;z-index:7;
+    background:linear-gradient(90deg,
+      #E2483A 0%,#E2483A 14%,
+      #F4B73C 14%,#F4B73C 28%,
+      #6FB84A 28%,#6FB84A 42%,
+      #3A9EDD 42%,#3A9EDD 56%,
+      #7B5CD4 56%,#7B5CD4 70%,
+      #2A2622 70%);
+  }
+
+  /* instax: white frame, thin gray border, no orange corners */
+  .photo-out.skin-instax .photo-card{
+    background:#FFFFFF;padding:14px 14px 54px;
+  }
+  body.night .photo-out.skin-instax .photo-card{background:#1E1914}
+  .photo-out.skin-instax .photo-card .pic{
+    border:1px solid rgba(0,0,0,.1);
+  }
+  .photo-out.skin-instax .photo-card .pic::before{
+    border-color:rgba(0,0,0,.05);
+  }
+  .photo-out.skin-instax .photo-card .pic::after{
+    background:none;
+  }
+  .photo-out.skin-instax .photo-card .cap{color:#1A1410}
+
+  /* cam96: bold red border, neon multi-color corners */
+  .photo-out.skin-cam96 .photo-card{
+    background:linear-gradient(180deg,#FFF8EC 0%,#FFE8D6 100%);
+    padding:16px 16px 48px;
+    box-shadow:0 12px 28px rgba(0,0,0,.24),0 0 0 2px #C2241A inset;
+  }
+  body.night .photo-out.skin-cam96 .photo-card{
+    background:linear-gradient(180deg,#1E1914 0%,#2A1A14 100%);
+  }
+  .photo-out.skin-cam96 .photo-card .pic::after{
+    background:
+      linear-gradient(#FFD23A,#FFD23A) left top/14px 2px no-repeat,
+      linear-gradient(#FFD23A,#FFD23A) left top/2px 14px no-repeat,
+      linear-gradient(#36C7D6,#36C7D6) right top/14px 2px no-repeat,
+      linear-gradient(#36C7D6,#36C7D6) right top/2px 14px no-repeat,
+      linear-gradient(#FF4FA3,#FF4FA3) left bottom/14px 2px no-repeat,
+      linear-gradient(#FF4FA3,#FF4FA3) left bottom/2px 14px no-repeat,
+      linear-gradient(#1E7FE0,#1E7FE0) right bottom/14px 2px no-repeat,
+      linear-gradient(#1E7FE0,#1E7FE0) right bottom/2px 14px no-repeat;
+  }
+  .photo-out.skin-cam96 .photo-card .cap{color:#C2241A;font-weight:700}
+
+  /* noir: black frame, square photo, silver accents */
+  .photo-out.skin-noir .photo-card{
+    background:#0F0F12;padding:18px 18px 48px;
+  }
+  body.night .photo-out.skin-noir .photo-card{background:#08080A}
+  .photo-out.skin-noir .photo-card .pic{
+    aspect-ratio:1/1;
+    border:1px solid rgba(255,255,255,.08);
+    background:#000;
+  }
+  .photo-out.skin-noir .photo-card .pic::before{
+    border-color:rgba(255,255,255,.06);
+  }
+  .photo-out.skin-noir .photo-card .pic::after{
+    background:
+      linear-gradient(#9A9AA0,#9A9AA0) left top/14px 1px no-repeat,
+      linear-gradient(#9A9AA0,#9A9AA0) left top/1px 14px no-repeat,
+      linear-gradient(#9A9AA0,#9A9AA0) right top/14px 1px no-repeat,
+      linear-gradient(#9A9AA0,#9A9AA0) right top/1px 14px no-repeat,
+      linear-gradient(#9A9AA0,#9A9AA0) left bottom/14px 1px no-repeat,
+      linear-gradient(#9A9AA0,#9A9AA0) left bottom/1px 14px no-repeat,
+      linear-gradient(#9A9AA0,#9A9AA0) right bottom/14px 1px no-repeat,
+      linear-gradient(#9A9AA0,#9A9AA0) right bottom/1px 14px no-repeat;
+  }
+  .photo-out.skin-noir .photo-card .cap{color:#9A9AA0;letter-spacing:.2em}
+
+  /* limoland: white frame, red bottom strip, red corners */
+  .photo-out.skin-limoland .photo-card{
+    background:#FFFFFF;padding:18px 18px 54px;
+  }
+  body.night .photo-out.skin-limoland .photo-card{background:#1E1914}
+  .photo-out.skin-limoland .photo-card .pic{
+    border:1px solid rgba(0,0,0,.1);
+  }
+  .photo-out.skin-limoland .photo-card .pic::before{
+    border-color:rgba(255,255,255,.3);
+  }
+  .photo-out.skin-limoland .photo-card .pic::after{
+    background:
+      linear-gradient(#E63A2E,#E63A2E) left top/12px 2px no-repeat,
+      linear-gradient(#E63A2E,#E63A2E) left top/2px 12px no-repeat,
+      linear-gradient(#E63A2E,#E63A2E) right top/12px 2px no-repeat,
+      linear-gradient(#E63A2E,#E63A2E) right top/2px 12px no-repeat,
+      linear-gradient(#E63A2E,#E63A2E) left bottom/12px 2px no-repeat,
+      linear-gradient(#E63A2E,#E63A2E) left bottom/2px 12px no-repeat,
+      linear-gradient(#E63A2E,#E63A2E) right bottom/12px 2px no-repeat,
+      linear-gradient(#E63A2E,#E63A2E) right bottom/2px 12px no-repeat;
+  }
+  .photo-out.skin-limoland .photo-card::before{
+    content:"";position:absolute;bottom:0;left:0;right:0;height:6px;z-index:7;
+    background:linear-gradient(90deg,#E63A2E,#C2241A);
+  }
+  .photo-out.skin-limoland .photo-card .cap{color:#1A1410}
 </style>
 </head>
 <body>
@@ -643,7 +758,7 @@
     <div class="cam-top">
       <div class="vf" aria-hidden="true"></div>
       <div class="flash-lamp" aria-hidden="true"></div>
-      <div class="brand">猫咪照相馆</div>
+      <div class="brand" id="camBrand">猫咪照相馆</div>
       <button class="shutter" id="shutterTop" aria-label="快门" type="button"></button>
     </div>
 
@@ -668,7 +783,7 @@
         <img id="photoImg" alt="刚拍的照片" />
         <div class="develop" aria-hidden="true"></div>
       </div>
-      <div class="cap">FILM #<span id="photoNum">001</span> · 猫咪照相馆</div>
+      <div class="cap" id="photoCap">FILM #001 · 猫咪照相馆</div>
       <button class="save-btn" id="saveBtn" type="button">保存</button>
     </div>
   </div>
@@ -715,7 +830,6 @@
   var flashScreen = $("flashScreen");
   var photoOut = $("photoOut");
   var photoImg = $("photoImg");
-  var photoNum = $("photoNum");
   var toast = $("toast");
 
   // ===== Audio (Web Audio API) =====
@@ -771,8 +885,12 @@
   // ===== Camera skin switcher =====
   var SKINS = ["classic","instax","cam96","noir","limoland"];
   var SKIN_NAMES = {classic:"经典彩虹",instax:"instax 银黑",cam96:"96 Cam 撞色",noir:"全黑 NOIR",limoland:"LimoLand 笑脸"};
+  var CAM_BRAND = {classic:"猫咪照相馆",instax:"instax",cam96:"96 CAM",noir:"SQ40",limoland:"SOFORT"};
+  var PHOTO_BRAND = {classic:"猫咪照相馆",instax:"instax mini 40",cam96:"96 CAM",noir:"SQ40",limoland:"SOFORT"};
   var frameEl = $("frame");
   var styleBar = $("styleBar");
+  var camBrand = $("camBrand");
+  var photoCap = $("photoCap");
   var currentSkin = "classic";
   function applySkin(name){
     if(SKINS.indexOf(name) < 0) name = "classic";
@@ -784,6 +902,7 @@
     for(var i=0;i<chips.length;i++){
       chips[i].classList.toggle("is-active", chips[i].getAttribute("data-skin") === name);
     }
+    if(camBrand) camBrand.textContent = CAM_BRAND[name] || "猫咪照相馆";
   }
   function switchSkin(dir){
     var idx = SKINS.indexOf(currentSkin);
@@ -898,6 +1017,7 @@
   var photoHideTimer = null;
   var photoDevelopTimer = null;
   var currentPhotoUrl = null;
+  var currentPhotoSkin = "classic";
   var scrollTimer = null;
   function takePhoto(){
     if(photoHideTimer){ clearTimeout(photoHideTimer); photoHideTimer = null; }
@@ -906,10 +1026,14 @@
 
     var lensUrl = active.src;
     currentPhotoUrl = lensUrl;
+    currentPhotoSkin = currentSkin;
     photoImg.src = lensUrl;
 
     state.photos++;
-    photoNum.textContent = String(state.photos).padStart(3,"0");
+    // Apply current skin to photo frame + update caption text
+    SKINS.forEach(function(s){ photoOut.classList.remove("skin-"+s); });
+    photoOut.classList.add("skin-"+currentSkin);
+    photoCap.textContent = "FILM #" + String(state.photos).padStart(3,"0") + " · " + (PHOTO_BRAND[currentSkin] || "猫咪照相馆");
 
     shutterSound();
     flash.classList.remove("fire");
@@ -977,19 +1101,47 @@
     }
     ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
   }
+  // 画一个 L 形角标
+  function drawCorner(ctx, x, y, len, thick, color, pos){
+    ctx.fillStyle = color;
+    if(pos === "tl"){
+      ctx.fillRect(x, y, len, thick);
+      ctx.fillRect(x, y, thick, len);
+    } else if(pos === "tr"){
+      ctx.fillRect(x - len, y, len, thick);
+      ctx.fillRect(x - thick, y, thick, len);
+    } else if(pos === "bl"){
+      ctx.fillRect(x, y - thick, len, thick);
+      ctx.fillRect(x, y - len, thick, len);
+    } else if(pos === "br"){
+      ctx.fillRect(x - len, y - thick, len, thick);
+      ctx.fillRect(x - thick, y - len, thick, len);
+    }
+  }
   function savePhoto(){
     if(!currentPhotoUrl){ showToast("照片还在显影…"); return; }
     showToast("正在生成照片…");
     var im = new Image();
     im.crossOrigin = "anonymous";
     im.onload = function(){
-      // 以预览 400px 图宽为基准 ×2.4 输出高清
       var scale = 2.4;
+      var skin = currentPhotoSkin;
+      var isSquare = skin === "noir";
       var imgW = Math.round(400 * scale);      // 960
-      var imgH = Math.round(imgW * 3 / 4);     // 720（4:3）
-      var padX = Math.round(16 * scale);       // 38
-      var padTop = Math.round(16 * scale);     // 38
-      var padBottom = Math.round(44 * scale);  // 106
+      var imgH = isSquare ? imgW : Math.round(imgW * 3 / 4); // 960 or 720
+
+      // 每种皮肤的留白 [padX, padTop, padBottom]
+      var pads = {
+        classic:[18,23,48], // top 留 5px 给彩虹条
+        instax:[14,14,54],
+        cam96:[16,16,48],
+        noir:[18,18,48],
+        limoland:[18,18,54]
+      };
+      var p = pads[skin] || [16,16,44];
+      var padX = Math.round(p[0] * scale);
+      var padTop = Math.round(p[1] * scale);
+      var padBottom = Math.round(p[2] * scale);
       var paperW = imgW + padX * 2;
       var paperH = imgH + padTop + padBottom;
 
@@ -997,67 +1149,136 @@
       canvas.width = paperW; canvas.height = paperH;
       var ctx = canvas.getContext("2d");
 
-      // 1. 相纸背景
-      ctx.fillStyle = "#F7F1E6";
-      ctx.fillRect(0, 0, paperW, paperH);
-
       var ix = padX, iy = padTop;
 
-      // 2. 猫图（object-fit:cover）+ 与预览 developed 态一致的轻微胶片滤镜
+      // 1. 相纸背景（按皮肤）
+      if(skin === "cam96"){
+        var grad = ctx.createLinearGradient(0, 0, 0, paperH);
+        grad.addColorStop(0, "#FFF8EC"); grad.addColorStop(1, "#FFE8D6");
+        ctx.fillStyle = grad;
+      } else if(skin === "noir"){
+        ctx.fillStyle = "#0F0F12";
+      } else if(skin === "instax"){
+        ctx.fillStyle = "#FFFFFF";
+      } else if(skin === "limoland"){
+        ctx.fillStyle = "#FFFFFF";
+      } else {
+        ctx.fillStyle = "#F7F1E6";
+      }
+      ctx.fillRect(0, 0, paperW, paperH);
+
+      // 2. 猫图（object-fit:cover）+ 按皮肤的胶片滤镜
       ctx.save();
       ctx.beginPath();
       ctx.rect(ix, iy, imgW, imgH);
       ctx.clip();
-      ctx.filter = "brightness(1.02) sepia(0.08) saturate(0.96) contrast(1.05)";
+      if(isSquare){
+        ctx.filter = "brightness(0.95) saturate(0.7) contrast(1.1)";
+      } else {
+        ctx.filter = "brightness(1.02) sepia(0.08) saturate(0.96) contrast(1.05)";
+      }
       drawCover(ctx, im, ix, iy, imgW, imgH);
       ctx.filter = "none";
       ctx.restore();
 
-      // 3. 图片外框细线（1px rgba(0,0,0,.15)）
+      // 3. 图片外框细线（按皮肤）
       var b = Math.max(2, Math.round(1 * scale));
-      ctx.fillStyle = "rgba(0,0,0,0.15)";
+      if(skin === "noir"){
+        ctx.fillStyle = "rgba(255,255,255,0.08)";
+      } else if(skin === "instax" || skin === "limoland"){
+        ctx.fillStyle = "rgba(0,0,0,0.1)";
+      } else {
+        ctx.fillStyle = "rgba(0,0,0,0.15)";
+      }
       ctx.fillRect(ix, iy, imgW, b);
       ctx.fillRect(ix, iy + imgH - b, imgW, b);
       ctx.fillRect(ix, iy, b, imgH);
       ctx.fillRect(ix + imgW - b, iy, b, imgH);
 
-      // 4. 橙色四角括号（#C8531C，12px L 形）
+      // 4. 四角括号（按皮肤）
       var clen = Math.round(12 * scale);
-      var cth = Math.max(2, Math.round(1 * scale));
-      ctx.fillStyle = "#C8531C";
-      // 左上
-      ctx.fillRect(ix, iy, clen, cth);
-      ctx.fillRect(ix, iy, cth, clen);
-      // 右上
-      ctx.fillRect(ix + imgW - clen, iy, clen, cth);
-      ctx.fillRect(ix + imgW - cth, iy, cth, clen);
-      // 左下
-      ctx.fillRect(ix, iy + imgH - cth, clen, cth);
-      ctx.fillRect(ix, iy + imgH - clen, cth, clen);
-      // 右下
-      ctx.fillRect(ix + imgW - clen, iy + imgH - cth, clen, cth);
-      ctx.fillRect(ix + imgW - cth, iy + imgH - clen, cth, clen);
+      var cth = Math.max(2, Math.round(2 * scale));
+      if(skin === "cam96"){
+        // 霓虹四色角标
+        drawCorner(ctx, ix, iy, clen, cth, "#FFD23A", "tl");
+        drawCorner(ctx, ix + imgW, iy, clen, cth, "#36C7D6", "tr");
+        drawCorner(ctx, ix, iy + imgH, clen, cth, "#FF4FA3", "bl");
+        drawCorner(ctx, ix + imgW, iy + imgH, clen, cth, "#1E7FE0", "br");
+      } else if(skin === "noir"){
+        // 银色细角标
+        var sc = Math.max(1, Math.round(1 * scale));
+        drawCorner(ctx, ix, iy, clen, sc, "#9A9AA0", "tl");
+        drawCorner(ctx, ix + imgW, iy, clen, sc, "#9A9AA0", "tr");
+        drawCorner(ctx, ix, iy + imgH, clen, sc, "#9A9AA0", "bl");
+        drawCorner(ctx, ix + imgW, iy + imgH, clen, sc, "#9A9AA0", "br");
+      } else if(skin === "limoland"){
+        // 红色角标
+        drawCorner(ctx, ix, iy, clen, cth, "#E63A2E", "tl");
+        drawCorner(ctx, ix + imgW, iy, clen, cth, "#E63A2E", "tr");
+        drawCorner(ctx, ix, iy + imgH, clen, cth, "#E63A2E", "bl");
+        drawCorner(ctx, ix + imgW, iy + imgH, clen, cth, "#E63A2E", "br");
+      } else if(skin === "classic"){
+        // 橙色角标（经典）
+        drawCorner(ctx, ix, iy, clen, cth, "#C8531C", "tl");
+        drawCorner(ctx, ix + imgW, iy, clen, cth, "#C8531C", "tr");
+        drawCorner(ctx, ix, iy + imgH, clen, cth, "#C8531C", "bl");
+        drawCorner(ctx, ix + imgW, iy + imgH, clen, cth, "#C8531C", "br");
+      }
+      // instax：无角标
 
-      // 5. 内框白线（inset 6px，1px rgba(255,255,255,.25)）
+      // 5. 内框线（按皮肤）
       var ins = Math.round(6 * scale);
-      ctx.strokeStyle = "rgba(255,255,255,0.25)";
+      ctx.strokeStyle = skin === "noir" ? "rgba(255,255,255,0.06)" :
+                        skin === "instax" ? "rgba(0,0,0,0.05)" :
+                        "rgba(255,255,255,0.25)";
       ctx.lineWidth = Math.max(1, Math.round(scale * 0.6));
       ctx.strokeRect(ix + ins, iy + ins, imgW - ins * 2, imgH - ins * 2);
 
-      // 6. 底部标题：FILM #001 · 猫咪照相馆
+      // 6. 顶部/底部装饰条（按皮肤）
+      if(skin === "classic"){
+        // 顶部彩虹条
+        var stripeH = Math.round(5 * scale);
+        var pcts = [14,14,14,14,14,30];
+        var cols = ["#E2483A","#F4B73C","#6FB84A","#3A9EDD","#7B5CD4","#2A2622"];
+        var xp = 0;
+        for(var i=0;i<cols.length;i++){
+          ctx.fillStyle = cols[i];
+          ctx.fillRect(xp, 0, Math.ceil(paperW * pcts[i] / 100), stripeH);
+          xp += Math.ceil(paperW * pcts[i] / 100);
+        }
+      } else if(skin === "limoland"){
+        // 底部红条
+        var botH = Math.round(6 * scale);
+        ctx.fillStyle = "#E63A2E";
+        ctx.fillRect(0, paperH - botH, paperW, botH);
+      } else if(skin === "cam96"){
+        // 红色外边框
+        var bord = Math.round(2 * scale);
+        ctx.strokeStyle = "#C2241A";
+        ctx.lineWidth = bord;
+        ctx.strokeRect(bord / 2, bord / 2, paperW - bord, paperH - bord);
+      }
+
+      // 7. 底部标题（按皮肤）
       var capFont = Math.round(11 * scale);
-      ctx.fillStyle = "#1A1410";
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
       ctx.font = "700 " + capFont + "px 'Space Mono', monospace";
       if("letterSpacing" in ctx){
         ctx.letterSpacing = (0.16 * capFont).toFixed(1) + "px";
       }
-      var capText = "FILM #" + String(state.photos).padStart(3,"0") + " · 猫咪照相馆";
+      var capText = "FILM #" + String(state.photos).padStart(3,"0") + " · " + (PHOTO_BRAND[skin] || "猫咪照相馆");
       var capY = iy + imgH + Math.round(14 * scale);
+      if(skin === "noir"){
+        ctx.fillStyle = "#9A9AA0";
+      } else if(skin === "cam96"){
+        ctx.fillStyle = "#C2241A";
+      } else {
+        ctx.fillStyle = "#1A1410";
+      }
       ctx.fillText(capText, paperW / 2, capY);
 
-      // 7. 导出 JPEG
+      // 8. 导出 JPEG
       canvas.toBlob(function(blob){
         if(!blob){ showToast("保存失败，请重试"); return; }
         var a = document.createElement("a");
