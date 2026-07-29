@@ -262,10 +262,10 @@
     /*
      * 打印阶段：相纸整体从打印口（顶部）向下展开。
      * 卡片 max-height 快速铺出整张相纸（边框、标题先到位），
-     * 图片区域用 clip-path 从上往下慢速揭示（6s），制造"边框已出、图片还在印"的真实感。
-     * inset(0 0 100% 0)：底部裁掉 100%（只露顶边）→ inset(0)：完全揭示，从上往下。
+     * 图片区域用 clip-path 从下往上慢速揭示（6s），制造"边框已出、图片还在印"的真实感。
+     * inset(100% 0 0 0)：顶部裁掉 100%（只露底边）→ inset(0)：完全揭示，从下往上。
      */
-    clip-path:inset(0 0 100% 0);
+    clip-path:inset(100% 0 0 0);
     transition:clip-path 6s cubic-bezier(.22,1,.36,1);
   }
   .photo-out.printing .photo-card .pic,
@@ -1378,6 +1378,20 @@
     }, true);
   })();
 
+  // 入场动画结束后清除 animation 属性，避免 forwards 填充模式下
+  // .frame 仍被浏览器视为 containing block，导致 .photo-out.fullscreen
+  // 的 position:fixed 相对 .frame 而非视口定位
+  (function(){
+    function clearAnim(el){
+      if(!el) return;
+      el.addEventListener("animationend", function(){
+        el.style.animation = "none";
+      }, {once:true});
+    }
+    clearAnim(frameEl);
+    clearAnim(document.querySelector(".marquee"));
+  })();
+
   // ===== Cat image rotation (crossfade every ~7s, uses prefetch pool) =====
   var rotateTimer = null;
   function loadCat(){
@@ -1497,7 +1511,7 @@
       showToast("已拍摄 · FILM #"+String(state.photos).padStart(3,"0"));
 
       // Scroll the page down in sync with the photo printing from the slot.
-      // 图片区域由 .pic 的 clip-path 从上往下揭示（6s, cubic-bezier(.22,1,.36,1)），
+      // 图片区域由 .pic 的 clip-path 从下往上揭示（6s, cubic-bezier(.22,1,.36,1)），
       // 页面同步滚动相同距离，让相纸保持在视野内、相机向上滚出视野。
       var startScroll = window.pageYOffset || document.documentElement.scrollTop;
       var targetScroll = startScroll + targetHeight;
