@@ -195,6 +195,28 @@
   .lens-inner .cat-img.loaded{opacity:1}
   .lens-inner .cat-img.bouncing{transform:scale(1.04)}
   .lens-inner .cat-img:hover{transform:scale(1.03)}
+  /* 随机模式：镜头不显示猫咪照片（保持黑色镜头盖），拍照后才知道拍到什么 */
+  body.mode-random .lens-inner .cat-img{opacity:0 !important;pointer-events:none}
+  body.mode-random .lens-inner::after{
+    content:"?";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:"Fraunces",serif;font-style:italic;font-size:clamp(48px,8vw,80px);
+    color:rgba(255,255,255,.12);pointer-events:none;z-index:3;
+  }
+  /* 随机模式：显影完成前完全遮挡照片（不显示渐变显影过程），显影完成后一次性揭示 */
+  body.mode-random .photo-out.developing .photo-card .pic .develop{
+    opacity:1 !important;transition:none !important;
+  }
+  body.mode-random .photo-out.developing .photo-card .pic img{
+    filter:blur(14px) brightness(.12) sepia(1) saturate(.5) contrast(.7) !important;
+    transition:none !important;
+  }
+  body.mode-random .photo-out.developed .photo-card .pic .develop{
+    opacity:0;transition:opacity .8s ease;
+  }
+  body.mode-random .photo-out.developed .photo-card .pic img{
+    filter:var(--film-filter,blur(0) brightness(1.02) sepia(.08) saturate(.96) contrast(1.05));
+    transition:filter .8s ease;
+  }
 
   .lens .halftone{
     position:absolute;inset:0;pointer-events:none;opacity:.1;
@@ -450,6 +472,23 @@
   .style-chip.is-active{
     border-color:var(--sienna);color:var(--ink);
     box-shadow:0 0 0 1px var(--sienna),0 2px 6px rgba(200,83,28,.18);
+  }
+  /* ===== Mode switch (carousel / random) ===== */
+  .mode-bar{
+    display:flex;justify-content:center;gap:0;
+    border:1px solid var(--rule-strong);border-radius:6px;overflow:hidden;
+    background:var(--paper);box-shadow:0 1px 3px rgba(0,0,0,.06);
+  }
+  .mode-btn{
+    border:none;background:transparent;cursor:pointer;
+    padding:7px 16px;
+    font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink-soft);
+    transition:all .25s ease;
+  }
+  .mode-btn:hover{color:var(--ink)}
+  .mode-btn.is-active{
+    background:var(--ink);color:var(--cream);
   }
   .chip-swatch{
     width:14px;height:14px;border-radius:3px;flex:none;
@@ -992,6 +1031,12 @@
     </button>
   </div>
 
+  <!-- ===== Mode switch (carousel / random) ===== -->
+  <div class="mode-bar" id="modeBar" role="group" aria-label="拍摄模式">
+    <button class="mode-btn is-active" type="button" data-mode="carousel" title="镜头轮播显示猫咪，拍照打印当前镜头画面">轮播模式</button>
+    <button class="mode-btn" type="button" data-mode="random" title="镜头不显示画面，拍照后才知道拍到什么">随机模式</button>
+  </div>
+
   <!-- ===== Film intensity slider (independent of advanced settings) ===== -->
   <div class="intensity-control">
     <span class="intensity-label">胶片强度</span>
@@ -1426,9 +1471,34 @@
   document.addEventListener("visibilitychange", function(){
     if(document.hidden){
       clearInterval(rotateTimer); rotateTimer = null;
+    } else if(!rotateTimer && currentMode !== "random"){
+      loadCat();
+      rotateTimer = setInterval(loadCat, 7000);
+    }
+  });
+
+  // ===== Mode switch (carousel / random) =====
+  var modeBar = $("modeBar");
+  var currentMode = "carousel"; // 默认轮播模式
+  modeBar.addEventListener("click", function(e){
+    var btn = e.target.closest ? e.target.closest(".mode-btn") : null;
+    if(!btn || btn.classList.contains("is-active")) return;
+    var mode = btn.getAttribute("data-mode");
+    if(mode === currentMode) return;
+    // 切换按钮激活态
+    var btns = modeBar.querySelectorAll(".mode-btn");
+    for(var i=0;i<btns.length;i++){ btns[i].classList.toggle("is-active", btns[i] === btn); }
+    currentMode = mode;
+    document.body.classList.toggle("mode-random", currentMode === "random");
+    // 随机模式：镜头隐藏，停止轮播（保留 next 预取供拍照用）
+    // 轮播模式：恢复轮播，立即刷新镜头显示
+    if(currentMode === "random"){
+      if(rotateTimer){ clearInterval(rotateTimer); rotateTimer = null; }
+      showToast("随机模式 · 拍照后才知道拍到什么");
     } else if(!rotateTimer){
       loadCat();
       rotateTimer = setInterval(loadCat, 7000);
+      showToast("轮播模式 · 镜头实时显示画面");
     }
   });
 
@@ -1458,7 +1528,16 @@
     if(photoCloseAnimTimer){ clearTimeout(photoCloseAnimTimer); photoCloseAnimTimer = null; }
     if(scrollSyncRAF){ cancelAnimationFrame(scrollSyncRAF); scrollSyncRAF = null; }
 
-    var lensUrl = active.src;
+    // 根据模式获取照片 URL：
+    // 轮播模式 → 直接用当前镜头显示的画面
+    // 随机模式 → 取一张新的随机图（镜头隐藏，用户拍照后显影完成才知道拍到什么）
+    // 注意：随机模式下同步消费 next 并立即预取下一张，避免与 loadCat 竞争同一 Promise
+    var photoUrlPromise = (currentMode === "random")
+      ? (function(){ var p = next; next = prefetchCat(); return p; })()
+      : Promise.resolve(active.src);
+
+    photoUrlPromise.then(function(lensUrl){
+    if(!lensUrl){ showToast("获取照片失败，请稍后重试"); return; }
     currentPhotoUrl = lensUrl;
     currentPhotoSkin = currentSkin;
     // 快照拍摄时的胶片参数（避免之后调参影响已拍照片的保存）
@@ -1570,6 +1649,7 @@
         photoHideTimer = null;
       }, 30000);
     }, 200);
+    }); // close photoUrlPromise.then
   }
   // FLIP 平滑放大到全屏：记录原位 → 切换全屏样式 → 反向变换 → 过渡到自然位
   function enterFullscreen(){
