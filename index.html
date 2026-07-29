@@ -214,6 +214,8 @@
     color:rgba(255,255,255,.12);pointer-events:none;z-index:3;
   }
   /* 随机模式：显影完成前完全遮挡照片（不显示渐变显影过程），显影完成后一次性揭示 */
+  /* 注意：developed 类添加时 developing 类不会移除（两者共存），故 developed 规则
+     也需 !important 且置于 developing 之后，靠源序胜出，才能解除黑色遮罩。 */
   body.mode-random .photo-out.developing .photo-card .pic .develop{
     opacity:1 !important;transition:none !important;
   }
@@ -222,11 +224,11 @@
     transition:none !important;
   }
   body.mode-random .photo-out.developed .photo-card .pic .develop{
-    opacity:0;transition:opacity .8s ease;
+    opacity:0 !important;transition:opacity .8s ease !important;
   }
   body.mode-random .photo-out.developed .photo-card .pic img{
-    filter:var(--film-filter,blur(0) brightness(1.02) sepia(.08) saturate(.96) contrast(1.05));
-    transition:filter .8s ease;
+    filter:var(--film-filter,blur(0) brightness(1.02) sepia(.08) saturate(.96) contrast(1.05)) !important;
+    transition:filter .8s ease !important;
   }
 
   .lens .halftone{
@@ -1674,23 +1676,49 @@
       photoFsTimer = setTimeout(function(){
         enterFullscreen();
         photoFsTimer = null;
-        // 全屏放大动画（.6s）结束后，加 developing 类触发显影（10s，先慢后快）
+        // 全屏放大动画（.6s）结束后，加 developing 类触发显影
         photoDevelopStartTimer = setTimeout(function(){
           photoOut.classList.add("developing");
           photoDevelopStartTimer = null;
         }, 650);
       }, 10000);
 
-      // 显影完成的兜底标记（打印 10s + 显影 10s）
+      // 显影完成时机：
+      // 轮播模式：打印 10s + 显影 10s = 21s（CSS 显影过渡 10s）
+      // 随机模式：打印 10s + 短暂停顿 ~2s = 12s（随机模式显影过渡仅 0.8s，无需等 10s）
+      var developDoneDelay = (currentMode === "random") ? 12000 : 21000;
+      // 先移除 developing 再加 developed，避免两类共存导致随机模式下
+      // developing 的 !important 黑色遮罩无法被 developed 规则覆盖。
       photoDevelopTimer = setTimeout(function(){
+        photoOut.classList.remove("developing");
+        void photoOut.offsetWidth; // reflow 确保过渡起始态生效
         photoOut.classList.add("developed");
+        // 随机模式：直接设置 inline 样式揭示照片（belt-and-suspenders，
+        // 确保即使 CSS 优先级有问题也能显示）
+        if(currentMode === "random"){
+          var devEl = photoOut.querySelector(".pic .develop");
+          var imgEl = photoOut.querySelector(".pic img");
+          var filmF = getComputedStyle(document.documentElement).getPropertyValue("--film-filter").trim();
+          if(devEl){
+            devEl.style.transition = "opacity .8s ease";
+            devEl.style.opacity = "0";
+          }
+          if(imgEl){
+            imgEl.style.transition = "filter .8s ease";
+            imgEl.style.filter = filmF || "none";
+          }
+        }
         photoDevelopTimer = null;
-      }, 21000);
+      }, developDoneDelay);
 
+      // 关闭时机：显影完成后留足查看时间
+      // 轮播模式：30s（21s 显影 + 9s 查看）
+      // 随机模式：20s（12s 显影 + 8s 查看）
+      var hideDelay = (currentMode === "random") ? 20000 : 30000;
       photoHideTimer = setTimeout(function(){
         closePhoto();
         photoHideTimer = null;
-      }, 30000);
+      }, hideDelay);
     }, 200);
     }); // close photoUrlPromise.then
   }
