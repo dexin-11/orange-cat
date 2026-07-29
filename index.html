@@ -234,35 +234,30 @@
     position:relative;width:calc(100% - 40px);max-width:440px;
     margin:-6px auto 0;padding:0;
     z-index:6;
+    /* 抽屉式平移：.photo-out 作为可见窗口，max-height 从 0 增长到完整高度，
+       顶部锚定（紧贴打印口），overflow:hidden 裁剪超出部分。
+       内部 .photo-card 完整渲染不变形，随窗口高度增长从上往下逐渐露出，
+       呈现"相纸从打印口向下被拉出"的抽屉效果。 */
+    max-height:0;overflow:hidden;
+    transition:max-height 6s cubic-bezier(.22,1,.36,1);
   }
   .photo-out .photo-card{
     position:relative;
     background:#F7F1E6;
     padding:16px 16px 44px;
     box-shadow:none;
-    max-height:0;overflow:hidden;
-    display:none;
-    /*
-     * 整张相纸从底部向上打印出现：
-     * max-height 无过渡，进入 printing 时瞬间到位（占位完整，配合滚动同步）。
-     * clip-path 从 inset(100% 0 0 0)（顶部裁100%，只露底边）→ inset(0)（完全揭示），
-     * 6s 从下往上移动揭示边界，制造"底部先出、上部逐渐打印"的移动效果。
-     * 不对 max-height 加过渡，避免它与 clip-path 同时动画互相干扰导致看不到打印过程。
-     */
-    clip-path:inset(100% 0 0 0);
-    transition:clip-path 6s cubic-bezier(.22,1,.36,1),
-               box-shadow .4s ease .2s;
+    /* 不再用 max-height/overflow/display 控制打印，.photo-card 始终完整渲染。
+       可见性由父级 .photo-out 的窗口裁剪控制。 */
   }
-  /* measuring: 临时放开 max-height 以读取真实内容高度，无过渡、需可见。
-     clip-path 临时取消，避免测量时内容被裁掉影响视觉（scrollHeight 不受影响，但保险起见）。 */
-  .photo-out .photo-card.measuring{
-    max-height:none !important;transition:none !important;display:block;
-    clip-path:none !important;
+  /* measuring: 临时放开 .photo-out 的 max-height 以读取 .photo-card 真实高度，
+     无过渡、需可见。 */
+  .photo-out.measuring{
+    max-height:none !important;transition:none !important;
+  }
+  .photo-out.printing{
+    max-height:var(--print-h,760px);
   }
   .photo-out.printing .photo-card{
-    display:block;
-    max-height:var(--print-h,760px);
-    clip-path:inset(0 0 0 0);
     box-shadow:0 12px 28px rgba(0,0,0,.24);
   }
   /* art-frame */
@@ -352,6 +347,8 @@
     width:100%;max-width:none;margin:0;padding:0;
     display:flex;align-items:center;justify-content:center;
     padding:24px;
+    /* 解除打印窗口裁剪，让相纸完整可见并居中放大 */
+    max-height:none;overflow:visible;
   }
   /* frosted-glass backdrop */
   .photo-out.fullscreen::before{
@@ -364,9 +361,7 @@
   @keyframes fsFade{from{opacity:0}to{opacity:1}}
   .photo-out.fullscreen .photo-card{
     position:relative;z-index:2;
-    max-height:none;max-width:min(92vw,560px);width:100%;
-    overflow:visible;
-    clip-path:none;
+    max-width:min(92vw,560px);width:100%;
     box-shadow:0 30px 80px rgba(0,0,0,.5),0 10px 30px rgba(0,0,0,.3);
   }
   .photo-out.fullscreen.skin-cam96 .photo-card{
@@ -1488,37 +1483,36 @@
     var img0 = photoOut.querySelector(".pic img");
     if(card0){
       card0.style.transition=""; card0.style.transform=""; card0.style.transformOrigin="";
-      card0.style.maxHeight=""; card0.style.removeProperty("--print-h");
     }
-    // 强制重置打印 clip-path 与显影状态：临时清除 transition 立即回到初始态，
-    // reflow 后恢复 transition，确保第二次拍照时动画能完整触发。
-    // .photo-card 的 clip-path 现在统一控制打印方向（整张相纸从底部向上揭示）
-    if(card0){ card0.style.transition="none"; card0.style.clipPath=""; }
+    // .photo-out 的 max-height/transition 控制抽屉式打印窗口。
+    // 重置：清除 inline 样式回到 CSS 默认（max-height:0），并强制 reflow 重启动画。
+    photoOut.style.transition="none";
+    photoOut.style.maxHeight="0";
+    photoOut.style.removeProperty("--print-h");
     if(develop0){ develop0.style.transition="none"; develop0.style.opacity=""; }
     if(img0){ img0.style.transition="none"; img0.style.filter=""; }
     void photoOut.offsetWidth; // reflow so animations replay
-    if(card0){ card0.style.transition=""; }
+    photoOut.style.transition="";
     if(develop0){ develop0.style.transition=""; }
     if(img0){ img0.style.transition=""; }
 
     setTimeout(function(){
       var card = photoOut.querySelector(".photo-card");
-      // 测量相纸实际高度，用精确值驱动 max-height 动画（避免固定大值导致动画失真）
-      // 方案：临时给 card 加一个测量用 class（max-height:none），读取 scrollHeight 后移除
-      // 不用 inline maxHeight，避免覆盖 printing 状态的 class 样式
-      card.classList.add("measuring");
+      // 测量 .photo-card 真实高度，用精确值驱动 .photo-out 的 max-height 动画。
+      // 临时给 .photo-out 加 measuring 类（max-height:none），读取 card.scrollHeight 后移除。
+      photoOut.classList.add("measuring");
       var targetHeight = card.scrollHeight;
-      card.classList.remove("measuring");
-      void card.offsetWidth; // reflow 确保 transition 重置
-      // 将精确高度写入 CSS 变量，printing 状态用该值
-      card.style.setProperty("--print-h", targetHeight + "px");
+      photoOut.classList.remove("measuring");
+      void photoOut.offsetWidth; // reflow 确保 transition 重置
+      // 将精确高度写入 .photo-out 的 CSS 变量，printing 状态用该值
+      photoOut.style.setProperty("--print-h", targetHeight + "px");
 
       photoOut.classList.add("printing");
       showToast("已拍摄 · FILM #"+String(state.photos).padStart(3,"0"));
 
       // Scroll the page down in sync with the photo printing from the slot.
-      // 整张相纸由 .photo-card 的 clip-path 从下往上揭示（6s, cubic-bezier(.22,1,.36,1)），
-      // 页面同步滚动相同距离，让相纸保持在视野内、相机向上滚出视野。
+      // .photo-out 的 max-height 从 0 增长到 --print-h（6s, cubic-bezier(.22,1,.36,1)），
+      // 相纸从打印口向下被拉出（抽屉式），页面同步滚动相同距离，让相纸保持在视野内。
       var startScroll = window.pageYOffset || document.documentElement.scrollTop;
       var targetScroll = startScroll + targetHeight;
       var duration = 6000;
@@ -1608,7 +1602,8 @@
     if(photoCloseAnimTimer){ clearTimeout(photoCloseAnimTimer); }
     photoCloseAnimTimer = setTimeout(function(){
       photoOut.classList.remove("printing","developing","developed");
-      if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; card.style.maxHeight=""; card.style.clipPath=""; card.style.removeProperty("--print-h"); }
+      if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; }
+      photoOut.style.transition=""; photoOut.style.maxHeight=""; photoOut.style.removeProperty("--print-h");
       photoCloseAnimTimer = null;
     }, 520);
   }
@@ -1625,7 +1620,8 @@
       exitFullscreen();
     } else {
       photoOut.classList.remove("printing","developing","developed");
-      if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; card.style.maxHeight=""; card.style.clipPath=""; card.style.removeProperty("--print-h"); }
+      if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; }
+      photoOut.style.transition=""; photoOut.style.maxHeight=""; photoOut.style.removeProperty("--print-h");
     }
   }
   $("shutterTop").addEventListener("click", function(e){ e.stopPropagation(); takePhoto(); });
