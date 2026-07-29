@@ -1564,7 +1564,7 @@
     card.style.transition = "transform .6s cubic-bezier(.22,1,.36,1)";
     card.style.transform = "";
   }
-  // 退出全屏：反向 FLIP，平滑回到打印位置
+  // 退出全屏：反向 FLIP 缩回打印位置，动画结束后照片直接消失（不再停留显示）
   function exitFullscreen(){
     if(!photoOut.classList.contains("fullscreen")) return;
     var card = photoOut.querySelector(".photo-card");
@@ -1584,12 +1584,11 @@
     void card.offsetWidth;
     card.style.transition = "transform .5s cubic-bezier(.22,1,.36,1)";
     card.style.transform = "";
-    // 过渡结束后清理 inline 样式（可被 takePhoto 取消）
+    // 过渡结束后清理 inline 样式并直接收起照片（不再停留显示）
     if(photoCloseAnimTimer){ clearTimeout(photoCloseAnimTimer); }
     photoCloseAnimTimer = setTimeout(function(){
-      card.style.transition = "";
-      card.style.transform = "";
-      card.style.transformOrigin = "";
+      photoOut.classList.remove("printing","developing","developed");
+      if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; card.style.maxHeight=""; card.style.removeProperty("--print-h"); }
       photoCloseAnimTimer = null;
     }, 520);
   }
@@ -1602,13 +1601,8 @@
     if(scrollSyncRAF){ cancelAnimationFrame(scrollSyncRAF); scrollSyncRAF = null; }
     var card = photoOut.querySelector(".photo-card");
     if(photoOut.classList.contains("fullscreen")){
-      // 全屏状态下关闭：先平滑退出全屏，动画结束后收回打印槽
+      // 全屏状态下关闭：exitFullscreen 的 FLIP 动画结束后会自动清除照片
       exitFullscreen();
-      photoCloseAnimTimer = setTimeout(function(){
-        photoOut.classList.remove("printing","developing","developed");
-        if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; card.style.maxHeight=""; card.style.removeProperty("--print-h"); }
-        photoCloseAnimTimer = null;
-      }, 520);
     } else {
       photoOut.classList.remove("printing","developing","developed");
       if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; card.style.maxHeight=""; card.style.removeProperty("--print-h"); }
