@@ -1485,14 +1485,16 @@
       card0.style.transition=""; card0.style.transform=""; card0.style.transformOrigin="";
     }
     // .photo-out 的 max-height/transition 控制抽屉式打印窗口。
-    // 重置：清除 inline 样式回到 CSS 默认（max-height:0），并强制 reflow 重启动画。
+    // 重置：清除所有 inline 样式（含 maxHeight/transition/--print-h），回到 CSS 默认
+    // （max-height:0, transition:max-height 6s）。注意不要留 inline maxHeight="0"，
+    // 否则优先级高于 printing 类的 max-height:var(--print-h) 会导致打印动画不触发。
     photoOut.style.transition="none";
-    photoOut.style.maxHeight="0";
+    photoOut.style.maxHeight="";        // 清除 inline，让 CSS 默认 max-height:0 生效
     photoOut.style.removeProperty("--print-h");
     if(develop0){ develop0.style.transition="none"; develop0.style.opacity=""; }
     if(img0){ img0.style.transition="none"; img0.style.filter=""; }
     void photoOut.offsetWidth; // reflow so animations replay
-    photoOut.style.transition="";
+    photoOut.style.transition="";        // 恢复 CSS 默认 transition，准备 6s 打印过渡
     if(develop0){ develop0.style.transition=""; }
     if(img0){ img0.style.transition=""; }
 
