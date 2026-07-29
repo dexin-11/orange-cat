@@ -1520,26 +1520,9 @@
       photoOut.classList.add("printing");
       showToast("已拍摄 · FILM #"+String(state.photos).padStart(3,"0"));
 
-      // Scroll the page down in sync with the photo printing from the slot.
+      // 打印时相机保持不动，不滚动页面，照片底部留空。
       // .photo-out 的 height 从 0 增长到 --print-h（10s, cubic-bezier(.22,1,.36,1)），
-      // 相纸从打印口向下被拉出（抽屉式），页面同步滚动相同距离，让相纸保持在视野内。
-      var startScroll = window.pageYOffset || document.documentElement.scrollTop;
-      var targetScroll = startScroll + targetHeight;
-      var duration = 10000;
-      var startTime = performance.now();
-      // 与 CSS 的 cubic-bezier(.22,1,.36,1) 近似的缓动（cubic ease-out）
-      function ease(t){ return 1 - Math.pow(1 - t, 3); }
-      function scrollStep(now){
-        var elapsed = now - startTime;
-        var t = Math.min(elapsed / duration, 1);
-        window.scrollTo(0, startScroll + (targetScroll - startScroll) * ease(t));
-        if(t < 1 && photoOut.classList.contains("printing") && !photoOut.classList.contains("fullscreen")){
-          scrollSyncRAF = requestAnimationFrame(scrollStep);
-        } else {
-          scrollSyncRAF = null;
-        }
-      }
-      scrollSyncRAF = requestAnimationFrame(scrollStep);
+      // 相纸从打印口向下被拉出（抽屉式，底部先出）。
 
       // 打印完成（10s）后放大到全屏，全屏放大动画（.6s）结束后再开始显影
       photoFsTimer = setTimeout(function(){
