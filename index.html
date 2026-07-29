@@ -234,20 +234,19 @@
     position:relative;width:calc(100% - 40px);max-width:440px;
     margin:-6px auto 0;padding:0;
     z-index:6;
-    /* 抽屉式平移：.photo-out 作为可见窗口，max-height 从 0 增长到完整高度，
-       顶部锚定（紧贴打印口），overflow:hidden 裁剪超出部分。
-       内部 .photo-card 完整渲染不变形，随窗口高度增长从上往下逐渐露出，
-       呈现"相纸从打印口向下被拉出"的抽屉效果。 */
+    /* 抽屉式平移（底部先出）：.photo-out 作为可见窗口，max-height 从 0 增长到完整高度，
+       overflow:hidden 裁剪超出部分。.photo-card 绝对定位贴底（bottom:0），
+       这样窗口高度增长时，可见区域从底部向上扩展——底部（远离打印口的自由端）先露出，
+       顶部（靠近打印口）最后露出，符合用户要求的"底部先出、顶部最后出来"。 */
     max-height:0;overflow:hidden;
     transition:max-height 6s cubic-bezier(.22,1,.36,1);
   }
   .photo-out .photo-card{
-    position:relative;
+    position:absolute;left:0;right:0;bottom:0;
     background:#F7F1E6;
     padding:16px 16px 44px;
     box-shadow:none;
-    /* 不再用 max-height/overflow/display 控制打印，.photo-card 始终完整渲染。
-       可见性由父级 .photo-out 的窗口裁剪控制。 */
+    /* 绝对定位贴底，始终完整渲染不变形，由父级窗口裁剪控制可见区域。 */
   }
   /* measuring: 临时放开 .photo-out 的 max-height 以读取 .photo-card 真实高度，
      无过渡、需可见。 */
@@ -360,7 +359,7 @@
   }
   @keyframes fsFade{from{opacity:0}to{opacity:1}}
   .photo-out.fullscreen .photo-card{
-    position:relative;z-index:2;
+    position:relative;left:auto;right:auto;bottom:auto;z-index:2;
     max-width:min(92vw,560px);width:100%;
     box-shadow:0 30px 80px rgba(0,0,0,.5),0 10px 30px rgba(0,0,0,.3);
   }
@@ -1501,9 +1500,10 @@
     setTimeout(function(){
       var card = photoOut.querySelector(".photo-card");
       // 测量 .photo-card 真实高度，用精确值驱动 .photo-out 的 max-height 动画。
-      // 临时给 .photo-out 加 measuring 类（max-height:none），读取 card.scrollHeight 后移除。
+      // .photo-card 是 position:absolute，读取其自身 offsetHeight（完整渲染高度）。
+      // measuring 类仅用于禁用过渡，避免测量时触发动画。
       photoOut.classList.add("measuring");
-      var targetHeight = card.scrollHeight;
+      var targetHeight = card.offsetHeight;
       photoOut.classList.remove("measuring");
       void photoOut.offsetWidth; // reflow 确保 transition 重置
       // 将精确高度写入 .photo-out 的 CSS 变量，printing 状态用该值
