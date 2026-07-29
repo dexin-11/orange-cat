@@ -1380,11 +1380,16 @@
 
   // 入场动画结束后清除 animation 属性，避免 forwards 填充模式下
   // .frame 仍被浏览器视为 containing block，导致 .photo-out.fullscreen
-  // 的 position:fixed 相对 .frame 而非视口定位
+  // 的 position:fixed 相对 .frame 而非视口定位。
+  // 注意：.marquee/.frame 初始 opacity:0，靠 forwards 保持 opacity:1，
+  // 清除 animation 前必须把终态（opacity:1, transform:none）写入 inline style，
+  // 否则元素会回到 opacity:0 而消失。
   (function(){
     function clearAnim(el){
       if(!el) return;
       el.addEventListener("animationend", function(){
+        el.style.opacity = "1";
+        el.style.transform = "none";
         el.style.animation = "none";
       }, {once:true});
     }
