@@ -144,6 +144,17 @@
   }
   .cam-top .shutter:hover{transform:scale(1.06)}
   .cam-top .shutter:active{transform:scale(.92)}
+  /* 快门加载中状态（随机模式照片未加载好时禁用，避免拍到黑图） */
+  .cam-top .shutter.is-loading{
+    cursor:wait;pointer-events:none;
+    animation:shutterLoad 1.3s ease-in-out infinite;
+  }
+  .cam-top .shutter.is-loading:hover{transform:none}
+  .cam-top .shutter.is-loading:active{transform:none}
+  @keyframes shutterLoad{
+    0%,100%{opacity:.38;filter:grayscale(.5)}
+    50%{opacity:.72;filter:grayscale(.2)}
+  }
 
   /* lens: landscape window holding the cat photo (matches landscape photos) */
   .lens{
@@ -1147,13 +1158,16 @@
       });
     });
   }
-  var next = prefetchCat();
+  var next = null;
+  var nextReady = false;
+  var currentMode = "carousel"; // 默认轮播模式（提前声明供 updateShutterState 使用）
 
   var $ = function(id){ return document.getElementById(id); };
   var catA = $("catImgA"), catB = $("catImgB");
   var active = catA;
   var flash = $("flash");
   var flashScreen = $("flashScreen");
+  var shutterTop = $("shutterTop");
   var photoOut = $("photoOut");
   var photoImg = $("photoImg");
   var toast = $("toast");
@@ -1448,9 +1462,30 @@
 
   // ===== Cat image rotation (crossfade every ~7s, uses prefetch pool) =====
   var rotateTimer = null;
+  // 预取下一张猫咪图，并跟踪加载就绪状态（随机模式下快门需等待就绪）
+  function primeNext(){
+    nextReady = false;
+    updateShutterState();
+    next = prefetchCat().then(function(url){
+      nextReady = !!url;
+      updateShutterState();
+      if(!url){
+        // 加载失败，1.5s 后自动重试，确保 next 始终有效
+        setTimeout(primeNext, 1500);
+      }
+      return url;
+    });
+    return next;
+  }
+  // 根据模式和加载状态切换快门可用性（随机模式未就绪时禁用，避免拍到黑图）
+  function updateShutterState(){
+    if(!shutterTop) return;
+    var loading = (currentMode === "random" && !nextReady);
+    shutterTop.classList.toggle("is-loading", loading);
+  }
   function loadCat(){
     var consumed = next;
-    next = prefetchCat();
+    primeNext();
     consumed.then(function(fullUrl){
       if(!fullUrl) return;
       var inactive = active === catA ? catB : catA;
@@ -1466,6 +1501,7 @@
       inactive.src = fullUrl;
     });
   }
+  primeNext();
   loadCat();
   rotateTimer = setInterval(loadCat, 7000);
   document.addEventListener("visibilitychange", function(){
@@ -1479,7 +1515,6 @@
 
   // ===== Mode switch (carousel / random) =====
   var modeBar = $("modeBar");
-  var currentMode = "carousel"; // 默认轮播模式
   modeBar.addEventListener("click", function(e){
     var btn = e.target.closest ? e.target.closest(".mode-btn") : null;
     if(!btn || btn.classList.contains("is-active")) return;
@@ -1494,12 +1529,15 @@
     // 轮播模式：恢复轮播，立即刷新镜头显示
     if(currentMode === "random"){
       if(rotateTimer){ clearInterval(rotateTimer); rotateTimer = null; }
-      showToast("随机模式 · 拍照后才知道拍到什么");
+      // 若 next 尚未就绪，提示加载中；就绪后 updateShutterState 会自动解除
+      if(!nextReady){ showToast("正在加载照片…"); }
+      else { showToast("随机模式 · 拍照后才知道拍到什么"); }
     } else if(!rotateTimer){
       loadCat();
       rotateTimer = setInterval(loadCat, 7000);
       showToast("轮播模式 · 镜头实时显示画面");
     }
+    updateShutterState();
   });
 
   // ===== Click on lens = subtle bounce (no meow, no hearts) =====
@@ -1521,6 +1559,11 @@
   var currentPhotoSkin = "classic";
   var currentPhotoFilm = null;
   function takePhoto(){
+    // 随机模式下必须等待下一张照片加载完成，避免拍到黑图
+    if(currentMode === "random" && !nextReady){
+      showToast("正在加载照片，请稍候…");
+      return;
+    }
     if(photoHideTimer){ clearTimeout(photoHideTimer); photoHideTimer = null; }
     if(photoDevelopTimer){ clearTimeout(photoDevelopTimer); photoDevelopTimer = null; }
     if(photoDevelopStartTimer){ clearTimeout(photoDevelopStartTimer); photoDevelopStartTimer = null; }
@@ -1533,7 +1576,7 @@
     // 随机模式 → 取一张新的随机图（镜头隐藏，用户拍照后显影完成才知道拍到什么）
     // 注意：随机模式下同步消费 next 并立即预取下一张，避免与 loadCat 竞争同一 Promise
     var photoUrlPromise = (currentMode === "random")
-      ? (function(){ var p = next; next = prefetchCat(); return p; })()
+      ? (function(){ var p = next; primeNext(); return p; })()
       : Promise.resolve(active.src);
 
     photoUrlPromise.then(function(lensUrl){
