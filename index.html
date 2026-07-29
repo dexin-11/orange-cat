@@ -1571,7 +1571,7 @@
     if(photoDevelopStartTimer){ clearTimeout(photoDevelopStartTimer); photoDevelopStartTimer = null; }
     if(photoFsTimer){ clearTimeout(photoFsTimer); photoFsTimer = null; }
     if(photoCloseAnimTimer){ clearTimeout(photoCloseAnimTimer); photoCloseAnimTimer = null; }
-    if(scrollSyncRAF){ cancelAnimationFrame(scrollSyncRAF); scrollSyncRAF = null; }
+    if(scrollSyncRAF){ clearInterval(scrollSyncRAF); scrollSyncRAF = null; }
 
     // 根据模式获取照片 URL：
     // 轮播模式 → 直接用当前镜头显示的画面
@@ -1632,11 +1632,21 @@
     setTimeout(function(){
       var card = photoOut.querySelector(".photo-card");
       // 测量 .photo-card 真实高度，用精确值驱动 .photo-out 的 height 动画。
-      // .photo-card 是 position:absolute，读取其自身 offsetHeight（完整渲染高度）。
-      // measuring 类仅用于禁用过渡，避免测量时触发动画。
-      photoOut.classList.add("measuring");
+      // photo-card 是 position:absolute，在 height:0 overflow:hidden 容器内浏览器不布局它，
+      // offsetHeight 返回 0。解决：临时将 card 改为 position:static 并展开 photo-out，
+      // 使 card 进入文档流获得真实高度，测量后恢复。
+      var origCardPos = card.style.position;
+      var origPoHeight = photoOut.style.height;
+      var origPoOverflow = photoOut.style.overflow;
+      card.style.position = "static";
+      photoOut.style.height = "auto";
+      photoOut.style.overflow = "visible";
       var targetHeight = card.offsetHeight;
-      photoOut.classList.remove("measuring");
+      // 若 offsetHeight 为 0（height:0 容器内 absolute 子元素未布局），用 CSS 默认值
+      if(targetHeight < 200) targetHeight = 760;
+      card.style.position = origCardPos;
+      photoOut.style.height = origPoHeight;
+      photoOut.style.overflow = origPoOverflow;
       // 关键：测量后 reflow 锁定 height:0（inline，无过渡），
       // 然后清除 inline height 并恢复 transition，确保加 printing 类时
       // height 从 0（CSS 默认）过渡到 var(--print-h)，10s 打印动画正常触发。
@@ -1647,13 +1657,39 @@
       photoOut.style.transition="";       // 恢复 CSS 默认 transition（height 10s）
       // 将精确高度写入 .photo-out 的 CSS 变量，printing 状态用该值
       photoOut.style.setProperty("--print-h", targetHeight + "px");
+      // .photo-out.printing 是 position:absolute，不撑开文档高度。
+      // 给 body 加 paddingBottom 扩展可滚动区域，让同步滚动能滚到相纸底部（含虚线）。
+      document.body.style.paddingBottom = targetHeight + "px";
 
       photoOut.classList.add("printing");
       showToast("已拍摄 · FILM #"+String(state.photos).padStart(3,"0"));
 
-      // 打印期间不滚动页面——保持相机不动，镜头继续可见并轮播切换。
-      // 相纸从打印口向下拉出，底部超出视口部分留空（用户可自行下拉查看）。
-      // （原先的 scrollSyncRAF 同步滚动会把镜头滚出视口，导致看不到轮播。）
+      // 页面随相纸打印同步向下滚动，让相纸底部（含虚线）始终在视野内。
+      // 打印是 10s height 过渡，单次 scrollTo(smooth) ~1-2s 就完成，之后相纸
+      // 仍向下生长会把底部虚线推出视口。改为每帧读取 photo-out 实际渲染底部，
+      // 让页面滚动跟随，确保底部虚线在整个 10s 打印过程中始终可见。
+      // 进入全屏 / 打印结束 / 取消打印时自动停止。
+      void document.body.offsetHeight; // 确保 paddingBottom 已生效，扩展可滚动区域
+      var printSyncStart = Date.now();
+      var printSyncDuration = 10000;   // 与 CSS transition:height 10s 一致
+      var viewportBottomMargin = 32;   // 底部留白，确保虚线不被遮挡
+      function syncPrintScroll(){
+        if(Date.now() - printSyncStart >= printSyncDuration ||
+           photoOut.classList.contains("fullscreen") ||
+           !photoOut.classList.contains("printing")){
+          if(scrollSyncRAF){ clearInterval(scrollSyncRAF); scrollSyncRAF = null; }
+          return;
+        }
+        var rect = photoOut.getBoundingClientRect();
+        var viewportH = window.innerHeight || document.documentElement.clientHeight;
+        var desiredBottom = viewportH - viewportBottomMargin;
+        var delta = rect.bottom - desiredBottom;
+        // 仅向下跟随：相纸底部超出视口下方时才滚动，避免开头反向回滚把相机推出视野
+        if(delta > 1){ window.scrollBy(0, delta); }
+      }
+      if(scrollSyncRAF){ clearInterval(scrollSyncRAF); scrollSyncRAF = null; }
+      syncPrintScroll(); // 立即同步一次
+      scrollSyncRAF = setInterval(syncPrintScroll, 16);
 
       // 打印完成（10s）后放大到全屏，全屏放大动画（.6s）结束后再开始显影
       photoFsTimer = setTimeout(function(){
@@ -1666,10 +1702,8 @@
         }, 650);
       }, 10000);
 
-      // 显影完成时机：
-      // 轮播模式：打印 10s + 显影 10s = 21s（CSS 显影过渡 10s）
-      // 随机模式：打印 10s + 短暂停顿 ~2s = 12s（随机模式显影过渡仅 0.8s，无需等 10s）
-      var developDoneDelay = (currentMode === "random") ? 12000 : 21000;
+      // 显影完成时机（两种模式一致）：打印 10s + 显影 10s = 21s
+      var developDoneDelay = 21000;
       // 先移除 developing 再加 developed，避免两类共存导致随机模式下
       // developing 的 !important 黑色遮罩无法被 developed 规则覆盖。
       photoDevelopTimer = setTimeout(function(){
@@ -1694,10 +1728,8 @@
         photoDevelopTimer = null;
       }, developDoneDelay);
 
-      // 关闭时机：显影完成后留足查看时间
-      // 轮播模式：30s（21s 显影 + 9s 查看）
-      // 随机模式：20s（12s 显影 + 8s 查看）
-      var hideDelay = (currentMode === "random") ? 20000 : 30000;
+      // 关闭时机（两种模式一致）：30s（21s 显影 + 9s 查看）
+      var hideDelay = 30000;
       photoHideTimer = setTimeout(function(){
         closePhoto();
         photoHideTimer = null;
@@ -1713,6 +1745,8 @@
     var rect = card.getBoundingClientRect();
     // 切换到全屏（fixed 居中 + 放大尺寸）
     photoOut.classList.add("fullscreen");
+    // 进入全屏后不再需要打印占位高度
+    document.body.style.paddingBottom = "";
     // 记录全屏后的矩形
     var newRect = card.getBoundingClientRect();
     // 计算从新位到原位的反向变换（以中心为锚点）
@@ -1764,7 +1798,8 @@
     if(photoDevelopStartTimer){ clearTimeout(photoDevelopStartTimer); photoDevelopStartTimer = null; }
     if(photoFsTimer){ clearTimeout(photoFsTimer); photoFsTimer = null; }
     if(photoCloseAnimTimer){ clearTimeout(photoCloseAnimTimer); photoCloseAnimTimer = null; }
-    if(scrollSyncRAF){ cancelAnimationFrame(scrollSyncRAF); scrollSyncRAF = null; }
+    if(scrollSyncRAF){ clearInterval(scrollSyncRAF); scrollSyncRAF = null; }
+    document.body.style.paddingBottom = "";
     var card = photoOut.querySelector(".photo-card");
     if(photoOut.classList.contains("fullscreen")){
       // 全屏状态下关闭：exitFullscreen 的 FLIP 动画结束后会自动清除照片
