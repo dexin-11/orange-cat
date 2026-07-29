@@ -234,12 +234,14 @@
     position:relative;width:calc(100% - 40px);max-width:440px;
     margin:-6px auto 0;padding:0;
     z-index:6;
-    /* 抽屉式平移（底部先出）：.photo-out 作为可见窗口，max-height 从 0 增长到完整高度，
+    /* 抽屉式平移（底部先出）：.photo-out 作为可见窗口，height 从 0 增长到完整高度，
        overflow:hidden 裁剪超出部分。.photo-card 绝对定位贴底（bottom:0），
        这样窗口高度增长时，可见区域从底部向上扩展——底部（远离打印口的自由端）先露出，
-       顶部（靠近打印口）最后露出，符合用户要求的"底部先出、顶部最后出来"。 */
-    max-height:0;overflow:hidden;
-    transition:max-height 6s cubic-bezier(.22,1,.36,1);
+       顶部（靠近打印口）最后露出。
+       用 height 而非 max-height，因为 absolute 子元素不撑开父级，max-height 过渡
+       时父级实际高度始终为 0，看不到动画；height 能直接控制父级实际高度。 */
+    height:0;overflow:hidden;
+    transition:height 6s cubic-bezier(.22,1,.36,1);
   }
   .photo-out .photo-card{
     position:absolute;left:0;right:0;bottom:0;
@@ -248,13 +250,13 @@
     box-shadow:none;
     /* 绝对定位贴底，始终完整渲染不变形，由父级窗口裁剪控制可见区域。 */
   }
-  /* measuring: 临时放开 .photo-out 的 max-height 以读取 .photo-card 真实高度，
+  /* measuring: 临时放开 .photo-out 的 height 以读取 .photo-card 真实高度，
      无过渡、需可见。 */
   .photo-out.measuring{
-    max-height:none !important;transition:none !important;
+    height:auto !important;transition:none !important;
   }
   .photo-out.printing{
-    max-height:var(--print-h,760px);
+    height:var(--print-h,760px);
   }
   .photo-out.printing .photo-card{
     box-shadow:0 12px 28px rgba(0,0,0,.24);
@@ -347,7 +349,7 @@
     display:flex;align-items:center;justify-content:center;
     padding:24px;
     /* 解除打印窗口裁剪，让相纸完整可见并居中放大 */
-    max-height:none;overflow:visible;
+    height:auto;overflow:visible;
   }
   /* frosted-glass backdrop */
   .photo-out.fullscreen::before{
@@ -1483,29 +1485,35 @@
     if(card0){
       card0.style.transition=""; card0.style.transform=""; card0.style.transformOrigin="";
     }
-    // .photo-out 的 max-height/transition 控制抽屉式打印窗口。
-    // 重置：清除所有 inline 样式（含 maxHeight/transition/--print-h），回到 CSS 默认
-    // （max-height:0, transition:max-height 6s）。注意不要留 inline maxHeight="0"，
-    // 否则优先级高于 printing 类的 max-height:var(--print-h) 会导致打印动画不触发。
+    // .photo-out 的 height/transition 控制抽屉式打印窗口。
+    // 重置：强制 height:0 且无过渡，reflow 锁定初始态，再恢复 transition 准备 6s 打印过渡。
     photoOut.style.transition="none";
-    photoOut.style.maxHeight="";        // 清除 inline，让 CSS 默认 max-height:0 生效
+    photoOut.style.height="0";
     photoOut.style.removeProperty("--print-h");
     if(develop0){ develop0.style.transition="none"; develop0.style.opacity=""; }
     if(img0){ img0.style.transition="none"; img0.style.filter=""; }
-    void photoOut.offsetWidth; // reflow so animations replay
-    photoOut.style.transition="";        // 恢复 CSS 默认 transition，准备 6s 打印过渡
+    void photoOut.offsetWidth; // reflow 锁定 height:0 的初始态
+    // 恢复 transition（CSS 默认 height 6s），准备打印动画
+    photoOut.style.transition="";
     if(develop0){ develop0.style.transition=""; }
     if(img0){ img0.style.transition=""; }
 
     setTimeout(function(){
       var card = photoOut.querySelector(".photo-card");
-      // 测量 .photo-card 真实高度，用精确值驱动 .photo-out 的 max-height 动画。
+      // 测量 .photo-card 真实高度，用精确值驱动 .photo-out 的 height 动画。
       // .photo-card 是 position:absolute，读取其自身 offsetHeight（完整渲染高度）。
       // measuring 类仅用于禁用过渡，避免测量时触发动画。
       photoOut.classList.add("measuring");
       var targetHeight = card.offsetHeight;
       photoOut.classList.remove("measuring");
-      void photoOut.offsetWidth; // reflow 确保 transition 重置
+      // 关键：测量后 reflow 锁定 height:0（inline，无过渡），
+      // 然后清除 inline height 并恢复 transition，确保加 printing 类时
+      // height 从 0（CSS 默认）过渡到 var(--print-h)，6s 打印动画正常触发。
+      photoOut.style.transition="none";
+      photoOut.style.height="0";
+      void photoOut.offsetWidth;          // reflow 锁定 height:0 初始态
+      photoOut.style.height="";           // 清除 inline，让 printing 类的 var(--print-h) 生效
+      photoOut.style.transition="";       // 恢复 CSS 默认 transition（height 6s）
       // 将精确高度写入 .photo-out 的 CSS 变量，printing 状态用该值
       photoOut.style.setProperty("--print-h", targetHeight + "px");
 
@@ -1513,7 +1521,7 @@
       showToast("已拍摄 · FILM #"+String(state.photos).padStart(3,"0"));
 
       // Scroll the page down in sync with the photo printing from the slot.
-      // .photo-out 的 max-height 从 0 增长到 --print-h（6s, cubic-bezier(.22,1,.36,1)），
+      // .photo-out 的 height 从 0 增长到 --print-h（6s, cubic-bezier(.22,1,.36,1)），
       // 相纸从打印口向下被拉出（抽屉式），页面同步滚动相同距离，让相纸保持在视野内。
       var startScroll = window.pageYOffset || document.documentElement.scrollTop;
       var targetScroll = startScroll + targetHeight;
@@ -1605,7 +1613,7 @@
     photoCloseAnimTimer = setTimeout(function(){
       photoOut.classList.remove("printing","developing","developed");
       if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; }
-      photoOut.style.transition=""; photoOut.style.maxHeight=""; photoOut.style.removeProperty("--print-h");
+      photoOut.style.transition=""; photoOut.style.height=""; photoOut.style.removeProperty("--print-h");
       photoCloseAnimTimer = null;
     }, 520);
   }
@@ -1623,7 +1631,7 @@
     } else {
       photoOut.classList.remove("printing","developing","developed");
       if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; }
-      photoOut.style.transition=""; photoOut.style.maxHeight=""; photoOut.style.removeProperty("--print-h");
+      photoOut.style.transition=""; photoOut.style.height=""; photoOut.style.removeProperty("--print-h");
     }
   }
   $("shutterTop").addEventListener("click", function(e){ e.stopPropagation(); takePhoto(); });
