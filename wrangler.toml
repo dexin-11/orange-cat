@@ -2,9 +2,10 @@ name = "orange-cat-418"
 main = "src/worker.js"
 compatibility_date = "2024-09-23"
 
-# 将 HTML 文件作为文本模块导入 Worker
+# 将 HTML 文件作为文本模块、图片作为二进制 Data 模块导入 Worker
 rules = [
-  { type = "Text", globs = ["**/*.html"], fallthrough = false }
+  { type = "Text", globs = ["**/*.html"], fallthrough = false },
+  { type = "Data", globs = ["**/*.jpg"], fallthrough = false }
 ]
 
 # 部署后任意路径访问都会返回 418 维护页

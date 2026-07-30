@@ -206,14 +206,13 @@
   .lens-inner .cat-img.loaded{opacity:1}
   .lens-inner .cat-img.bouncing{transform:scale(1.04)}
   .lens-inner .cat-img:hover{transform:scale(1.03)}
-  /* 随机模式：镜头不显示猫咪照片，改为直接显示相机正面照片（复刻经典机型）。
-     默认 Polaroid OneStep SX-70；可通过 --random-camera CSS 变量切换机型。
-     图片铺满镜头窗口，object-fit:cover 裁切适配。拍照后才知道拍到什么。 */
+  /* 随机模式：镜头不显示猫咪照片，改为直接显示相机正面照片
+     （复刻 Polaroid OneStep SX-70，白色机身+彩虹条纹+圆形镜头）。
+     图片由 Worker 在 /assets/camera-front-polaroid.jpg 提供。
+     拍照后才知道拍到什么。 */
   body.mode-random .lens-inner .cat-img{opacity:0 !important;pointer-events:none}
   body.mode-random .lens-inner{
-    --random-camera:url("assets/camera-front-polaroid.jpg");
-    background:#0A0907 center/cover no-repeat;
-    background-image:var(--random-camera);
+    background:#0A0907 url("assets/camera-front-polaroid.jpg") center/cover no-repeat;
   }
   /* 镜头玻璃上的细微高光反射（仅点缀，不遮挡相机正面） */
   body.mode-random .lens-inner::after{
