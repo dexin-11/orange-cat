@@ -1509,7 +1509,8 @@
   document.addEventListener("visibilitychange", function(){
     if(document.hidden){
       clearInterval(rotateTimer); rotateTimer = null;
-    } else if(!rotateTimer && currentMode !== "random"){
+    } else if(!rotateTimer && currentMode !== "random" && !photoOut.classList.contains("printing")){
+      // 照片显示期间（printing）不恢复轮播，镜头需停在被拍摄的那一张
       loadCat();
       rotateTimer = setInterval(loadCat, 7000);
     }
@@ -1572,6 +1573,12 @@
     if(photoFsTimer){ clearTimeout(photoFsTimer); photoFsTimer = null; }
     if(photoCloseAnimTimer){ clearTimeout(photoCloseAnimTimer); photoCloseAnimTimer = null; }
     if(scrollSyncRAF){ clearInterval(scrollSyncRAF); scrollSyncRAF = null; }
+
+    // 拍摄后停止轮播，镜头停在被拍摄的那一张（与相纸显示的画面一致），
+    // 照片关闭后由 closePhoto 恢复轮播。
+    if(currentMode === "carousel" && rotateTimer){
+      clearInterval(rotateTimer); rotateTimer = null;
+    }
 
     // 根据模式获取照片 URL：
     // 轮播模式 → 直接用当前镜头显示的画面
@@ -1789,6 +1796,12 @@
       photoOut.classList.remove("printing","developing","developed");
       if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; }
       photoOut.style.transition=""; photoOut.style.height=""; photoOut.style.removeProperty("--print-h");
+      // 全屏退出动画结束后恢复轮播（拍摄时已停止），让镜头重新开始切换画面。
+      // 仅轮播模式且当前未在轮播时恢复，避免与模式切换/页面隐藏逻辑重复启动。
+      if(currentMode === "carousel" && !rotateTimer && !document.hidden){
+        loadCat();
+        rotateTimer = setInterval(loadCat, 7000);
+      }
       photoCloseAnimTimer = null;
     }, 520);
   }
@@ -1802,12 +1815,18 @@
     document.body.style.paddingBottom = "";
     var card = photoOut.querySelector(".photo-card");
     if(photoOut.classList.contains("fullscreen")){
-      // 全屏状态下关闭：exitFullscreen 的 FLIP 动画结束后会自动清除照片
+      // 全屏状态下关闭：exitFullscreen 的 FLIP 动画结束后会自动清除照片并恢复轮播
       exitFullscreen();
     } else {
       photoOut.classList.remove("printing","developing","developed");
       if(card){ card.style.transition=""; card.style.transform=""; card.style.transformOrigin=""; }
       photoOut.style.transition=""; photoOut.style.height=""; photoOut.style.removeProperty("--print-h");
+      // 非全屏关闭：立即恢复轮播（拍摄时已停止），让镜头重新开始切换画面。
+      // 仅轮播模式且当前未在轮播时恢复，避免与模式切换/页面隐藏逻辑重复启动。
+      if(currentMode === "carousel" && !rotateTimer && !document.hidden){
+        loadCat();
+        rotateTimer = setInterval(loadCat, 7000);
+      }
     }
   }
   $("shutterTop").addEventListener("click", function(e){ e.stopPropagation(); takePhoto(); });
