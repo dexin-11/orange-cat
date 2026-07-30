@@ -206,43 +206,22 @@
   .lens-inner .cat-img.loaded{opacity:1}
   .lens-inner .cat-img.bouncing{transform:scale(1.04)}
   .lens-inner .cat-img:hover{transform:scale(1.03)}
-  /* 随机模式：镜头不显示猫咪照片，改为显示相机正面——圆形镜头玻璃面
-     （复刻 Polaroid OneStep SX-70 前置镜头外观：镜筒同心环 + 暗色玻璃
-     + 抗反射镀膜色调 + 高光反射）。拍照后才知道拍到什么。 */
+  /* 随机模式：镜头不显示猫咪照片，改为直接显示相机正面照片（复刻经典机型）。
+     默认 Polaroid OneStep SX-70；可通过 --random-camera CSS 变量切换机型。
+     图片铺满镜头窗口，object-fit:cover 裁切适配。拍照后才知道拍到什么。 */
   body.mode-random .lens-inner .cat-img{opacity:0 !important;pointer-events:none}
-  /* 外圈镜头筒：同心环用 radial-gradient 硬边绘制（不超出元素边界，
-     不被 .lens-inner overflow:hidden 裁剪），模拟 OneStep 塑料镜筒 */
-  body.mode-random .lens-inner::before{
-    content:"";position:absolute;left:50%;top:50%;
-    transform:translate(-50%,-50%);
-    width:66%;aspect-ratio:1;border-radius:50%;
-    z-index:3;pointer-events:none;
-    background:radial-gradient(circle at 50% 50%,
-      #1a1714 0%,#1a1714 56%,
-      #3a3530 56%,#3a3530 60%,
-      #1a1714 60%,#1a1714 64%,
-      #2a2622 64%,#2a2622 70%,
-      #1a1714 70%,#1a1714 74%,
-      #3a3530 74%,#3a3530 78%,
-      #2a2622 78%,#2a2622 100%);
-    box-shadow:
-      0 4px 14px rgba(0,0,0,.55),
-      inset 0 0 16px rgba(0,0,0,.65);
+  body.mode-random .lens-inner{
+    --random-camera:url("assets/camera-front-polaroid.jpg");
+    background:#0A0907 center/cover no-repeat;
+    background-image:var(--random-camera);
   }
-  /* 镜头玻璃：暗色玻璃 + 绿色抗反射镀膜色调 + 高光反射 */
+  /* 镜头玻璃上的细微高光反射（仅点缀，不遮挡相机正面） */
   body.mode-random .lens-inner::after{
-    content:"";position:absolute;left:50%;top:50%;
-    transform:translate(-50%,-50%);
-    width:46%;aspect-ratio:1;border-radius:50%;
-    z-index:4;pointer-events:none;
+    content:"";position:absolute;inset:0;z-index:4;pointer-events:none;
     background:
-      radial-gradient(circle at 32% 26%,rgba(190,225,205,.42) 0%,transparent 22%),
-      radial-gradient(circle at 50% 50%,#1a2820 0%,#0a1410 35%,#050a08 65%,#000 100%);
-    box-shadow:
-      inset 0 0 14px rgba(0,0,0,.9),
-      inset 0 2px 6px rgba(100,160,130,.22),
-      inset 0 -2px 4px rgba(0,0,0,.6),
-      0 0 0 2px rgba(255,255,255,.08);
+      radial-gradient(ellipse at 30% 20%,rgba(255,255,255,.14) 0%,transparent 35%),
+      radial-gradient(ellipse at 70% 90%,rgba(0,0,0,.28) 0%,transparent 50%);
+    box-shadow:inset 0 0 18px rgba(0,0,0,.4);
   }
   /* 随机模式：显影完成前完全遮挡照片（不显示渐变显影过程），显影完成后一次性揭示 */
   /* 注意：developed 类添加时 developing 类不会移除（两者共存），故 developed 规则
