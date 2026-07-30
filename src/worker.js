@@ -1,9 +1,9 @@
 import html from "../index.html";
-// 随机模式镜头背景：Polaroid OneStep SX-70 正面照（Data 模块导入为二进制）
-import polaroidImg from "../assets/camera-front-polaroid.jpg";
+// 随机模式镜头背景：镜头玻璃特写（Data 模块导入为二进制）
+import lensGlassImg from "../assets/lens-glass.jpg";
 
 // 418 维护页 Worker —— 所有路径均返回 418 状态码 + 维护页面 HTML
-// 例外：/assets/* 返回静态资源（随机模式相机正面照）
+// 例外：/assets/* 返回静态资源（随机模式镜头玻璃照）
 export default {
   async fetch(request) {
     const url = new URL(request.url);
@@ -19,9 +19,9 @@ export default {
       );
     }
 
-    // 静态资源：随机模式相机正面照（长期缓存）
-    if (url.pathname === "/assets/camera-front-polaroid.jpg") {
-      return new Response(polaroidImg, {
+    // 静态资源：随机模式镜头玻璃特写（长期缓存）
+    if (url.pathname === "/assets/lens-glass.jpg") {
+      return new Response(lensGlassImg, {
         status: 200,
         headers: {
           "content-type": "image/jpeg",
