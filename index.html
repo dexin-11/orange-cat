@@ -206,12 +206,43 @@
   .lens-inner .cat-img.loaded{opacity:1}
   .lens-inner .cat-img.bouncing{transform:scale(1.04)}
   .lens-inner .cat-img:hover{transform:scale(1.03)}
-  /* 随机模式：镜头不显示猫咪照片（保持黑色镜头盖），拍照后才知道拍到什么 */
+  /* 随机模式：镜头不显示猫咪照片，改为显示相机正面——圆形镜头玻璃面
+     （复刻 Polaroid OneStep SX-70 前置镜头外观：镜筒同心环 + 暗色玻璃
+     + 抗反射镀膜色调 + 高光反射）。拍照后才知道拍到什么。 */
   body.mode-random .lens-inner .cat-img{opacity:0 !important;pointer-events:none}
+  /* 外圈镜头筒：同心环用 radial-gradient 硬边绘制（不超出元素边界，
+     不被 .lens-inner overflow:hidden 裁剪），模拟 OneStep 塑料镜筒 */
+  body.mode-random .lens-inner::before{
+    content:"";position:absolute;left:50%;top:50%;
+    transform:translate(-50%,-50%);
+    width:66%;aspect-ratio:1;border-radius:50%;
+    z-index:3;pointer-events:none;
+    background:radial-gradient(circle at 50% 50%,
+      #1a1714 0%,#1a1714 56%,
+      #3a3530 56%,#3a3530 60%,
+      #1a1714 60%,#1a1714 64%,
+      #2a2622 64%,#2a2622 70%,
+      #1a1714 70%,#1a1714 74%,
+      #3a3530 74%,#3a3530 78%,
+      #2a2622 78%,#2a2622 100%);
+    box-shadow:
+      0 4px 14px rgba(0,0,0,.55),
+      inset 0 0 16px rgba(0,0,0,.65);
+  }
+  /* 镜头玻璃：暗色玻璃 + 绿色抗反射镀膜色调 + 高光反射 */
   body.mode-random .lens-inner::after{
-    content:"?";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    font-family:"Fraunces",serif;font-style:italic;font-size:clamp(48px,8vw,80px);
-    color:rgba(255,255,255,.12);pointer-events:none;z-index:3;
+    content:"";position:absolute;left:50%;top:50%;
+    transform:translate(-50%,-50%);
+    width:46%;aspect-ratio:1;border-radius:50%;
+    z-index:4;pointer-events:none;
+    background:
+      radial-gradient(circle at 32% 26%,rgba(190,225,205,.42) 0%,transparent 22%),
+      radial-gradient(circle at 50% 50%,#1a2820 0%,#0a1410 35%,#050a08 65%,#000 100%);
+    box-shadow:
+      inset 0 0 14px rgba(0,0,0,.9),
+      inset 0 2px 6px rgba(100,160,130,.22),
+      inset 0 -2px 4px rgba(0,0,0,.6),
+      0 0 0 2px rgba(255,255,255,.08);
   }
   /* 随机模式：显影完成前完全遮挡照片（不显示渐变显影过程），显影完成后一次性揭示 */
   /* 注意：developed 类添加时 developing 类不会移除（两者共存），故 developed 规则
@@ -1528,8 +1559,8 @@
     for(var i=0;i<btns.length;i++){ btns[i].classList.toggle("is-active", btns[i] === btn); }
     currentMode = mode;
     document.body.classList.toggle("mode-random", currentMode === "random");
-    // 随机模式：镜头隐藏，停止轮播（保留 next 预取供拍照用）
-    // 轮播模式：恢复轮播，立即刷新镜头显示
+    // 随机模式：镜头显示相机正面（镜头玻璃面），停止轮播（保留 next 预取供拍照用）
+    // 轮播模式：恢复轮播，立即刷新镜头显示猫咪画面
     if(currentMode === "random"){
       if(rotateTimer){ clearInterval(rotateTimer); rotateTimer = null; }
       // 若 next 尚未就绪，提示加载中；就绪后 updateShutterState 会自动解除
