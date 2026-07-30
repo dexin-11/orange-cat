@@ -206,14 +206,46 @@
   .lens-inner .cat-img.loaded{opacity:1}
   .lens-inner .cat-img.bouncing{transform:scale(1.04)}
   .lens-inner .cat-img:hover{transform:scale(1.03)}
-  /* 随机模式：镜头不显示猫咪照片，改为显示镜头玻璃特写
-     （圆形镜筒 + 暗色镀膜玻璃 + 高光反射），看起来就像这台相机自己的镜头。
-     不是把另一台相机塞进边框里——只显示一颗镜头的玻璃面。
-     拍照后才知道拍到什么。 */
-  body.mode-random .lens-inner .cat-img{opacity:0 !important;pointer-events:none}
-  body.mode-random .lens-inner{
-    background:#000 url("assets/lens-glass.jpg") center/cover no-repeat;
+  /* ===== 随机模式：直接用真实拍立得相机照片替代 CSS 绘制的相机外壳 =====
+     不同胶片皮肤对应不同型号相机（cam-{skin}.jpg）。
+     隐藏 CSS 绘制的 rainbow/cam-top装饰/lens/print-slot，.frame 背景换成相机照片，
+     快门按钮绝对定位叠在照片上，photo-out 仍从 .frame 底部弹出。 */
+  body.mode-random .frame{
+    background:transparent;
+    box-shadow:none;
+    border-radius:14px;
+    /* 相机照片按当前皮肤通过 .skin-* 设置 --cam-photo */
+    background-image:var(--cam-photo,none);
+    background-size:100% 100%;
+    background-repeat:no-repeat;
+    background-position:center;
+    aspect-ratio:4/3;
+    overflow:visible;
   }
+  body.mode-random .frame .rainbow,
+  body.mode-random .frame .print-slot,
+  body.mode-random .frame .lens{display:none}
+  body.mode-random .frame .cam-top{
+    position:absolute;top:0;left:0;right:0;
+    padding:0;margin:0;height:0;z-index:20;
+  }
+  body.mode-random .frame .cam-top .vf,
+  body.mode-random .frame .cam-top .flash-lamp,
+  body.mode-random .frame .cam-top .brand{display:none}
+  /* 快门按钮绝对定位到相机照片右上区域，保持可点击 */
+  body.mode-random .frame .cam-top .shutter{
+    position:absolute;top:6%;right:5%;
+    width:9%;height:0;padding-bottom:9%;
+    border-radius:50%;
+  }
+  body.mode-random .lens-inner .cat-img{opacity:0 !important;pointer-events:none}
+  /* 各皮肤对应的真实相机照片（随机模式 .frame 背景用） */
+  body.mode-random .frame{--cam-photo:url("assets/cam-classic.jpg")}
+  body.mode-random .frame.skin-instax{--cam-photo:url("assets/cam-instax.jpg")}
+  body.mode-random .frame.skin-cam96{--cam-photo:url("assets/cam-cam96.jpg")}
+  body.mode-random .frame.skin-noir{--cam-photo:url("assets/cam-noir.jpg")}
+  body.mode-random .frame.skin-limoland{--cam-photo:url("assets/cam-limoland.jpg")}
+  body.mode-random .frame.skin-joycam{--cam-photo:url("assets/cam-joycam.jpg")}
   /* 随机模式：显影完成前完全遮挡照片（不显示渐变显影过程），显影完成后一次性揭示 */
   /* 注意：developed 类添加时 developing 类不会移除（两者共存），故 developed 规则
      也需 !important 且置于 developing 之后，靠源序胜出，才能解除黑色遮罩。 */

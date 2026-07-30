@@ -1,9 +1,24 @@
 import html from "../index.html";
-// 随机模式镜头背景：镜头玻璃特写（Data 模块导入为二进制）
-import lensGlassImg from "../assets/lens-glass.jpg";
+// 随机模式相机外观照片：各皮肤对应不同型号（Data 模块导入为二进制）
+import camClassic from "../assets/cam-classic.jpg";
+import camInstax from "../assets/cam-instax.jpg";
+import camCam96 from "../assets/cam-cam96.jpg";
+import camNoir from "../assets/cam-noir.jpg";
+import camLimoland from "../assets/cam-limoland.jpg";
+import camJoycam from "../assets/cam-joycam.jpg";
+
+// 随机模式相机照片路由表：路径 → 导入的二进制模块
+var CAM_PHOTOS = {
+  "/assets/cam-classic.jpg": camClassic,
+  "/assets/cam-instax.jpg": camInstax,
+  "/assets/cam-cam96.jpg": camCam96,
+  "/assets/cam-noir.jpg": camNoir,
+  "/assets/cam-limoland.jpg": camLimoland,
+  "/assets/cam-joycam.jpg": camJoycam,
+};
 
 // 418 维护页 Worker —— 所有路径均返回 418 状态码 + 维护页面 HTML
-// 例外：/assets/* 返回静态资源（随机模式镜头玻璃照）
+// 例外：/assets/cam-*.jpg 返回随机模式相机外观照片
 export default {
   async fetch(request) {
     const url = new URL(request.url);
@@ -19,9 +34,10 @@ export default {
       );
     }
 
-    // 静态资源：随机模式镜头玻璃特写（长期缓存）
-    if (url.pathname === "/assets/lens-glass.jpg") {
-      return new Response(lensGlassImg, {
+    // 静态资源：随机模式各皮肤对应的相机外观照片（长期缓存）
+    var photo = CAM_PHOTOS[url.pathname];
+    if (photo) {
+      return new Response(photo, {
         status: 200,
         headers: {
           "content-type": "image/jpeg",
