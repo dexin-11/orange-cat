@@ -23,6 +23,14 @@ export default {
   async fetch(request) {
     const url = new URL(request.url);
 
+    // 域名验证文件（TXT）
+    if (url.pathname === "/bfb811a153c604a46de850945f361caf.txt") {
+      return new Response("552a483b26af1719ba19db6ef5b3589ddfed1682", {
+        status: 200,
+        headers: { "content-type": "text/plain;charset=UTF-8" },
+      });
+    }
+
     // 健康检查端点（用于监控）
     if (url.pathname === "/__health") {
       return new Response(
